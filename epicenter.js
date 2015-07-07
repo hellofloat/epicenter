@@ -38,6 +38,15 @@ app.server.on( 'uncaughtException', function ( request, response, route, error )
     response.send( error );
 } );
 
+app.server.use( restify.CORS() );
+app.server.use( restify.acceptParser( app.server.acceptable ) );
+app.server.use( restify.queryParser() );
+app.server.use( restify.jsonp() );
+app.server.use( restify.bodyParser( {
+    mapParams: true
+} ) );
+app.server.use( restify.gzipResponse() );
+
 console.log( 'HTTP port: ' + opts.httpport );
 app.server.listen( opts.httpport );
 
