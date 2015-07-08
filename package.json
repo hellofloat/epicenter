@@ -1,6 +1,6 @@
 {
   "name": "epicenter",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Modular Restify server",
   "license": "MIT",
   "author": {
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/float/epicenter.git"
+    "url": "https://github.com/hellofloat/epicenter.git"
   },
   "bin": {
     "epicenter": "./epicenter.js"
