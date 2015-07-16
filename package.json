@@ -1,6 +1,6 @@
 {
   "name": "epicenter",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Modular Restify server",
   "license": "MIT",
   "author": {
@@ -27,6 +27,7 @@
     "prettyjson": "^1.1.2",
     "require-all": "^1.1.0",
     "restify": "^3.0.3",
+    "restify-cookies": "^0.1.1",
     "untildify": "^2.1.0"
   }
 }

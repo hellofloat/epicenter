@@ -2,8 +2,7 @@
 'use strict';
 
 require( 'es6-shim' ); // shim the things
-
-//var async = require( 'async' );
+var CookieParser = require( 'restify-cookies' );
 var EventEmitter2 = require( 'eventemitter2' ).EventEmitter2;
 var fs = require( 'fs' );
 var getcli = require( './getcli' );
@@ -41,6 +40,7 @@ app.server.on( 'uncaughtException', function ( request, response, route, error )
 app.server.use( restify.CORS() );
 app.server.use( restify.acceptParser( app.server.acceptable ) );
 app.server.use( restify.queryParser() );
+app.server.use( CookieParser.parse );
 app.server.use( restify.jsonp() );
 app.server.use( restify.bodyParser() );
 app.server.use( restify.gzipResponse() );
