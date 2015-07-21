@@ -29,7 +29,8 @@ if ( sslEnabled ) {
 var app = Object.assign( {
     settings: opts,
     systems: [],
-    server: restify.createServer( serverOptions )
+    server: restify.createServer( serverOptions ),
+    eventBus: new EventEmitter2()
 }, EventEmitter2 );
 
 app.server.on( 'uncaughtException', function ( request, response, route, error ) {
