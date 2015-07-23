@@ -22,7 +22,7 @@ module.exports = function() {
 		type: 'arrayOfString',
 		help: 'Specify requires. By default the following are tried: ./routes, ./handlers, ./api',
 		helpArg: 'DIR',
-		default: [ './routes', './handlers', './api' ]
+		default: [ './routes', './handlers', './api', './processors' ]
 	}, {
 		name: 'name',
 		env: 'EPICENTER_NAME',
