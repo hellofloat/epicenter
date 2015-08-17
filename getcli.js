@@ -71,7 +71,7 @@ module.exports = function() {
 		default: false
 	} ];
 
-	var scriptName = path.basename( __filename );
+	var scriptName = path.basename( require.main.filename );
 
 	var parser = dashdash.createParser( {
 		options: options
@@ -97,7 +97,7 @@ module.exports = function() {
 			includeEnv: true
 		} ).trimRight();
 
-		console.log( 'usage: node ' + scriptName + '\n' + 'options:\n' + help );
+		console.log( 'usage: node ' + scriptName + ' [OPTIONS]\n' + 'options:\n' + help );
 		process.exit( 0 );
 	}
 

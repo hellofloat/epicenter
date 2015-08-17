@@ -1,188 +1,65 @@
-![Shipwright](/shipwright.jpg?raw=true)
+![Epicenter](/epicenter.jpg?raw=true)
 
-Shipwright
+Epicenter
 =========
 
-Shipwright is a command line interface for interacting with [DigitalOcean](https://digitalocean.com/).
-
-It is a very lightweight wrapper around the API. Effectively it just wraps up some of the painful
-bits you'd need to do if you were using curl.
-
-As such, the best docs on what you can do can be read here: [https://developers.digitalocean.com/documentation/v2](https://developers.digitalocean.com/documentation/v2)
+Epicenter is a command line server that will automatically load modules in certain default
+directories or in directories you specify.
 
 ## Installation
 
 ### Requirements
 
-Shipwright requires *node.js* and *npm*.
+Epicenter requires *node.js* and *npm*.
 
 ### Install via npm
 
-You can install Shipwright using npm globally on your computer:
+You can install Epicenter using npm globally on your computer:
 
 ```
-npm install -g shipwright
+npm install -g epicenter
 ```
 
 ## Usage
 
 ```
-usage: shipwright [OPTIONS] OPERATION RESOURCE [ARGS]
+usage: epicenter [OPTIONS]
 options:
-    --version       Print version and exit.
-    -h, --help      Print this help and exit.
-    -v, --verbose   Enable verbose output.
-    --token=TOKEN   Specifies your DO API token. Environment: DO_TOKEN=TOKEN
-    --fromfile=ARG  Allows you to read a given value from a file, eg:
-                    --fromfile=userdata,~/user-data.
-    --json          Output responses in raw JSON.
-    --pretty        If set, will output more human-readable JSON.
-    --stdin         If set, will read the request body from stdin.
-    --wait          If set, will wait for the created action to complete. Eg:
-                    when creating a droplet will wait for successful creation.
-```
+    --version                         Print version and exit.
+    -h, --help                        Print this help and exit.
+    -v, --verbose                     Enable verbose output.
+    -r DIR, --req=DIR, --require=DIR  Specify requires. By default the following are tried:
+                                        ./routes, ./handlers, ./api.
+                                      Environment: EPICENTER_REQUIRES=DIR
 
-### Operations
+    --name=NAME                       Specify the service name for restify.
+                                      Default: epicenter
+                                      Environment: EPICENTER_NAME=NAME
 
-- get
-- create (alias for 'post')
-- put
-- delete
+    --httpport=PORT                   Specify the HTTP port to listen on.
+                                      Default: 8000
+                                      Environment: EPICENTER_HTTP_PORT=PORT
 
-### Resources
+    --httpsport=PORT                  Specify the HTTPS port to listen on.
+                                      Defuault: 4443
+                                      Environment: EPICENTER_HTTPS_PORT=PORT
 
-Refer to the DigitalOcean [API docs](https://developers.digitalocean.com/documentation/v2)
+    --httpscert=PATH                  Specify the path of the file containing the SSL
+                                      certificate for the server.
+                                      Environment: EPICENTER_HTTPS_CERT=PATH
 
-### Arguments
+    --httpskey=PATH                   Specify the path fo the file containing the SSL
+                                      private key for the server.
+                                      Environment: EPICENTER_HTTPS_KEY=PATH
 
-Arguments are parsed in a key=value fashion and are added to the request either as a request
-body or as a query string.
+    --httpsciphers=CIPHERS            Specify the SSL ciphers.
+                                      Default:
+                                      ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA.
+                                      Environment: EPICENTER_HTTPS_CIPHERS=CIPHERS
 
-```--fromfile``` is an interesting option that lets you read the given argument in from a
-file on disk. This is particularly useful for something like user_data. (See examples below.)
-
-### Authentication
-
-Shipwright will first check for a DigitalOcean API token via the --token option.
-
-Failing that, it will check the environment variable DO_TOKEN.
-
-Failing that, Shipwright will look for a file in your home directory containing your API token:
-
-```
-.digitalocean.token
-```
-
-This last method is the recommended method: create a .digitalocean.token file by cutting/pasting your
-DigitalOcean API token.
-
-## Examples
-
-Let's get a list of our SSH keys stored with DigitalOcean (we'll use them later):
-
-```
-> shipwright get account/keys
-ssh_keys:
-    -
-    id:          <key id>
-    fingerprint: <key fingerprint>
-    public_key:  <key>
-    name:        <key name>
-    -
-    id:          <key id>
-    fingerprint: <key fingerprint>
-    public_key:  <key>
-    name:        <key name>
-...
-```
-
-Let's see what pre-built applications DigitalOcean has for us to use as images:
-
-```
-> shipwright.js get images type=application
-images:
-    -
-    id:            6423475
-    name:          WordPress on 14.04
-    distribution:  Ubuntu
-    slug:          wordpress
-    public:        true
-    regions:
-        - nyc1
-        - ams1
-        - sfo1
-        - nyc2
-        - ams2
-        - sgp1
-        - lon1
-        - nyc3
-        - ams3
-        - fra1
-    created_at:    2014-09-28T21:34:48Z
-    min_disk_size: 20
-    type:          snapshot
-    -
-    id:            10163059
-    name:          FreeBSD AMP on 10.1
-    distribution:  FreeBSD
-    slug:          freebsd-amp
-    public:        true
-    regions:
-        - nyc1
-        - ams1
-        - sfo1
-        - nyc2
-        - ams2
-        - sgp1
-        - lon1
-        - nyc3
-        - ams3
-        - fra1
-    created_at:    2015-01-21T15:45:44Z
-    min_disk_size: 20
-    type:          snapshot
-...
-```
-
-Let's create a droplet in sfo1, 512mb of ram, some user data, private networking and from a docker image:
-
-```
-> shipwright create droplets --fromfile=user_data,~/docker/base-userdata name=01-sfo1-docker region=sfo1 size=512mb image=docker ssh_keys=[<key id>,<key id>] private_networking=true
-droplet:
-    features:
-        - virtio
-    id:                 <droplet id>
-    vcpus:              1
-    networks:
-
-    name:               01-sfo1-docker
-    disk:               20
-    memory:             512
-    locked:             true
-    size:
-
-    snapshot_ids:
-        (empty array)
-    backup_ids:
-        (empty array)
-    image:
-
-    kernel:
-    id:      4782
-    name:    Ubuntu 14.04 x64 vmlinuz-3.13.0-52-generic-docker-memlimit
-    version: 3.13.0-52-generic
-    size_slug:          512mb
-    status:             new
-    next_backup_window: null
-    created_at:         2015-06-19T20:32:02Z
-    region:
-
-    links:
-        actions:
-            -
-            id:   <action id>
-            rel:  create
-            href: https://api.digitalocean.com/v2/actions/<action id>
+    --httpsforce                      If specified, will redirect all connections on
+                                      the unsecured port to the HTTPS port.
+                                      Environment: EPICENTER_HTTPS_FORCE=1
 ```
 
 ## Contributing
@@ -195,18 +72,15 @@ Pull requests are very welcome! Just make sure your code:
 
 ## Why?
 
-I wanted a command line tool that gave me nearly direct access to the DigitalOcean API. Shipwright
-basically just passes things on to the API. It's really just a glorified curl.
+Deploying microservices without something like epicenter means a lot of boilerplate
+code is replicated. Epicenter lets you just write the bits that matter for the
+particular microservice you're writing.
 
 # CHANGELOG
 
-v0.1.1
+v0.6.1
 ------
-- Improved error handling.
-
-v0.1.0
-------
-- Added the --wait option to wait for action completion.
+- Doc updates
 
 v0.0.1
 ------
