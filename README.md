@@ -62,6 +62,26 @@ options:
                                       Environment: EPICENTER_HTTPS_FORCE=1
 ```
 
+## Status
+
+You can retrieve Epicenter's status at the reserved URL: /__epicenter
+
+Eg:
+
+```json
+{
+    "version": "0.7.0",
+    "requests": {
+        "active": 1,
+        "total": 21,
+        "failed": 0,
+        "time": 64
+    },
+    "uptime": 16668,
+    "averageResponseTime": 3.0476190476190474
+}
+```
+
 ## Contributing
 
 Pull requests are very welcome! Just make sure your code:

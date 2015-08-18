@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 
+var _startTime = new Date();
+
 require( 'es6-shim' ); // shim the things
 var CookieParser = require( 'restify-cookies' );
 var EventEmitter2 = require( 'eventemitter2' ).EventEmitter2;
@@ -45,6 +47,41 @@ app.server.use( CookieParser.parse );
 app.server.use( restify.jsonp() );
 app.server.use( restify.bodyParser() );
 app.server.use( restify.gzipResponse() );
+
+var _requests = {
+    active: 0,
+    total: 0,
+    failed: 0,
+    time: 0
+};
+
+app.server.use( function( request, response, next ) {
+    var requestStartTime = new Date();
+    ++_requests.total;
+    ++_requests.active;
+    response.on( 'close', function() {
+        --_requests.active;
+        ++_requests.failed;
+        var timeDelta = new Date() - requestStartTime;
+        _requests.time += timeDelta;
+    } );
+    response.on( 'finish', function() {
+        --_requests.active;
+        var timeDelta = new Date() - requestStartTime;
+        _requests.time += timeDelta;
+    } );
+    next();
+} );
+
+var pkg = require( './package.json' );
+app.server.get( '/__epicenter', function( request, response ) {
+    response.send( {
+        version: pkg.version,
+        requests: _requests,
+        uptime: new Date() - _startTime,
+        averageResponseTime: _requests.time / _requests.total
+    } );
+} );
 
 console.log( 'HTTP port: ' + opts.httpport );
 app.server.listen( opts.httpport );
