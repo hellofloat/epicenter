@@ -21,9 +21,9 @@ var serverOptions = {
 };
 
 if ( sslEnabled ) {
+    serverOptions.certificate = fs.readFileSync( opts.httpscert );
+    serverOptions.key = fs.readFileSync( opts.httpskey );
     serverOptions.httpsServerOptions = {
-        cert: fs.readFileSync( opts.httpscert ),
-        key: fs.readFileSync( opts.httpskey ),
         ciphers: opts.httpsciphers
     };
 }
@@ -83,21 +83,29 @@ app.server.get( '/__epicenter', function( request, response ) {
     } );
 } );
 
-console.log( 'HTTP port: ' + opts.httpport );
-app.server.listen( opts.httpport );
-
 if ( sslEnabled ) {
-    console.log( 'HTTPS port: ' + opts.httpsport );
-    app.server.listen( opts.httpsport );
-}
+    console.log( 'HTTPS enabled' );
 
-if ( opts.httpsforce ) {
-    console.log( 'Forcing HTTPS...' );
-    app.server.use( function( request, response, next ) {
-        if ( request.headers[ 'x-forwarded-proto' ] !== 'https' ) {
-            return next( new restify.NotAuthorizedError( 'An HTTPS connection is required to request this resource.' ) );
-        }
+    var httpServer = restify.createServer( {
+        name: opts.name
     } );
+    if ( opts.httpsredirect ) {
+        console.log( '  Redirecting unsecured requests...' );
+        httpServer.pre( function( request, response ) {
+            var hostString = request.headers.host;
+            var hostInfo = hostString.split( ':' );
+            var host = hostInfo[ 0 ];
+            response.header( 'Location', 'https://' + host + request.url );
+            response.send( 301 );
+        } );
+    }
+    else {
+        console.log( '  Rejecting unsecured requests...' );
+        httpServer.pre( function( request, response, next ) {
+            return next( new restify.NotAuthorizedError( 'An HTTPS connection is required to request this resource.' ) );
+        } );
+    }
+    httpServer.listen( opts.httpport );
 }
 
 opts.requires.forEach( function( req ) {
@@ -123,4 +131,6 @@ opts.requires.forEach( function( req ) {
     } );
 } );
 
-console.log( 'Listening...' );
+var port = sslEnabled ? opts.httpsport : opts.httpport;
+app.server.listen( port );
+console.log( 'Listening on port: ' + port + ' ...' );
