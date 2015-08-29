@@ -48,6 +48,7 @@ app.server.use( restify.jsonp() );
 app.server.use( restify.bodyParser() );
 app.server.use( restify.gzipResponse() );
 
+var _ready = false;
 var _requests = {
     active: 0,
     total: 0,
@@ -79,7 +80,8 @@ app.server.get( '/__epicenter', function( request, response ) {
         version: pkg.version,
         requests: _requests,
         uptime: new Date() - _startTime,
-        averageResponseTime: _requests.time / _requests.total
+        averageResponseTime: _requests.time / _requests.total,
+        ready: _ready
     } );
 } );
 
@@ -134,3 +136,5 @@ opts.requires.forEach( function( req ) {
 var port = sslEnabled ? opts.httpsport : opts.httpport;
 app.server.listen( port );
 console.log( 'Listening on port: ' + port + ' ...' );
+
+_ready = true;
