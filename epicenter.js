@@ -40,6 +40,7 @@ app.server.on( 'uncaughtException', function ( request, response, route, error )
     response.send( error );
 } );
 
+restify.CORS.credentials = true;
 app.server.use( restify.CORS() );
 app.server.use( restify.acceptParser( app.server.acceptable ) );
 app.server.use( restify.queryParser() );
