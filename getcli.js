@@ -1,7 +1,6 @@
 'use strict';
 
 var dashdash = require( 'dashdash' );
-var extend = require( 'extend' );
 var path = require( 'path' );
 
 module.exports = function() {
@@ -115,7 +114,9 @@ module.exports = function() {
 	opts.requires = opts.require;
 	delete opts.require;
 
-	return extend( {
-		canonical: opts.httpscert && opts.httpskey ? 'https://localhost:' + opts.httpsport : 'http://localhost:' + opts.httpport
-	}, opts );
+	if ( !opts.canonical ) {
+		opts.canonical = opts.httpscert && opts.httpskey ? 'https://localhost:' + opts.httpsport : 'http://localhost:' + opts.httpport;
+	}
+
+	return opts;
 };
