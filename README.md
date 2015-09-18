@@ -30,7 +30,11 @@ options:
     -v, --verbose                     Enable verbose output.
     -r DIR, --req=DIR, --require=DIR  Specify requires. By default the following are tried:
                                         ./routes, ./handlers, ./api.
-                                      Environment: EPICENTER_REQUIRES=DIR
+                                      Environment: EPICENTER_REQUIRES=DIR;DIR2;DIR3
+
+    --canonical=BASE_URL              Specify a canonical base url for the
+                                      server, eg: "https://foo.com"
+                                      Environment: EPICENTER_CANONICAL=BASE_URL
 
     --name=NAME                       Specify the service name for restify.
                                       Default: epicenter
@@ -95,13 +99,3 @@ Pull requests are very welcome! Just make sure your code:
 Deploying microservices without something like epicenter means a lot of boilerplate
 code is replicated. Epicenter lets you just write the bits that matter for the
 particular microservice you're writing.
-
-# CHANGELOG
-
-v0.6.1
-------
-- Doc updates
-
-v0.0.1
-------
-- Initial release.

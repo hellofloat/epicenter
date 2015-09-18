@@ -33,7 +33,7 @@ var app = Object.assign( {
     systems: [],
     server: restify.createServer( serverOptions ),
     eventBus: new EventEmitter2()
-}, EventEmitter2 );
+}, EventEmitter2.prototype );
 
 app.server.on( 'uncaughtException', function ( request, response, route, error ) {
     console.error( 'uncaughtException', error.stack );

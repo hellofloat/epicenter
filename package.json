@@ -1,6 +1,6 @@
 {
   "name": "epicenter",
-  "version": "0.10.2",
+  "version": "0.11.0",
   "description": "Modular Restify server",
   "license": "MIT",
   "author": {
@@ -23,6 +23,7 @@
     "dashdash": "^1.10.0",
     "es6-shim": "^0.32.2",
     "eventemitter2": "^0.4.14",
+    "extend": "^3.0.0",
     "osenv": "^0.1.2",
     "prettyjson": "^1.1.2",
     "require-all": "^1.1.0",

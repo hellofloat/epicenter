@@ -1,6 +1,7 @@
 'use strict';
 
 var dashdash = require( 'dashdash' );
+var extend = require( 'extend' );
 var path = require( 'path' );
 
 module.exports = function() {
@@ -23,6 +24,12 @@ module.exports = function() {
 		help: 'Specify requires. By default the following are tried: ./routes, ./handlers, ./api',
 		helpArg: 'DIR',
 		default: [ './routes', './handlers', './api', './processors' ]
+	}, {
+		name: 'canonical',
+		env: 'EPICENTER_CANONICAL',
+		type: 'string',
+		help: 'Specify a canonical base url for the server, eg: "https://foo.com"',
+		helpArg: 'BASE_URL'
 	}, {
 		name: 'name',
 		env: 'EPICENTER_NAME',
@@ -101,12 +108,14 @@ module.exports = function() {
 		process.exit( 0 );
 	}
 
-	if ( opts.require[ 0 ].indexOf( ':' ) !== -1 ) {
-		opts.require = opts.require[ 0 ].split( ':' );
+	if ( opts.require[ 0 ].indexOf( ';' ) !== -1 ) {
+		opts.require = opts.require[ 0 ].split( ';' );
 	}
 
 	opts.requires = opts.require;
 	delete opts.require;
 
-	return opts;
+	return extend( {
+		canonical: opts.httpscert && opts.httpskey ? 'https://localhost:' + opts.httpsport : 'http://localhost:' + opts.httpport
+	}, opts );
 };
