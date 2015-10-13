@@ -8,6 +8,7 @@ var untildify = require( 'untildify' );
 module.exports = recursiveRequire;
 
 var defaults = {
+    allowMissing: false,
     extensions: [ 'js' ],
     require: require,
     check: null,
@@ -39,6 +40,11 @@ function recursiveRequire( options, callback ) {
 
     fs.readdir( canonical, function( error, files ) {
         if ( error ) {
+            if ( options.allowMissing && error.code && error.code === 'ENOENT' ) {
+                callback();
+                return;
+            }
+
             callback( error );
             return;
         }
@@ -46,12 +52,18 @@ function recursiveRequire( options, callback ) {
         async.eachSeries( files, function( filename, next ) {
 
             var canonicalFilename = path.join( canonical, filename );
-            if ( fs.lstatSync( canonicalFilename ).isDirectory() ) {
-                recursiveRequire( Object.assign( options, {
-                    directory: canonicalFilename
-                } ), next );
-            }
-            else {
+            fs.lstat( canonicalFilename, function( error, stat ) {
+                if ( error ) {
+                    next( error );
+                    return;
+                }
+
+                if ( stat.isDirectory() ) {
+                    recursiveRequire( Object.assign( options, {
+                        directory: canonicalFilename
+                    } ), next );
+                    return;
+                }
 
                 if ( !options.check( canonicalFilename ) ) {
                     next();
@@ -67,7 +79,7 @@ function recursiveRequire( options, callback ) {
                 }
 
                 next();
-            }
+            } );
         }, callback );
     } );
 }
