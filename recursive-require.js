@@ -1,5 +1,6 @@
 'use strict';
 
+var async = require( 'async' );
 var fs = require( 'fs' );
 var path = require( 'path' );
 var untildify = require( 'untildify' );
@@ -13,7 +14,7 @@ var defaults = {
     visit: null
 };
 
-function recursiveRequire( options ) {
+function recursiveRequire( options, callback ) {
     if ( typeof options === 'string' ) {
         options = Object.assign( defaults, {
             directory: options
@@ -36,26 +37,37 @@ function recursiveRequire( options ) {
 
     var canonical = path.resolve( untildify( options.directory ) );
 
-    fs.readdirSync( canonical ).forEach( function( filename ) {
-
-        var canonicalFilename = path.join( canonical, filename );
-        if ( fs.lstatSync( canonicalFilename ).isDirectory() ) {
-            recursiveRequire( Object.assign( options, {
-                directory: canonicalFilename
-            } ) );
+    fs.readdir( canonical, function( error, files ) {
+        if ( error ) {
+            callback( error );
+            return;
         }
-        else {
 
-            if ( !options.check( canonicalFilename ) ) {
-                return;
+        async.eachSeries( files, function( filename, next ) {
+
+            var canonicalFilename = path.join( canonical, filename );
+            if ( fs.lstatSync( canonicalFilename ).isDirectory() ) {
+                recursiveRequire( Object.assign( options, {
+                    directory: canonicalFilename
+                } ), next );
             }
+            else {
 
-            // Require the file.
-            var required = options.require( canonicalFilename );
+                if ( !options.check( canonicalFilename ) ) {
+                    next();
+                    return;
+                }
 
-            if ( options.visit ) {
-                options.visit( required, canonicalFilename, filename );
+                // Require the file.
+                var required = options.require( canonicalFilename );
+
+                if ( options.visit ) {
+                    options.visit( required, canonicalFilename, filename, next );
+                    return;
+                }
+
+                next();
             }
-        }
+        }, callback );
     } );
 }

@@ -4,6 +4,7 @@
 var _startTime = new Date();
 
 require( 'es6-shim' ); // shim the things
+var async = require( 'async' );
 var CookieParser = require( 'restify-cookies' );
 var EventEmitter2 = require( 'eventemitter2' ).EventEmitter2;
 var fs = require( 'fs' );
@@ -116,35 +117,30 @@ if ( sslEnabled ) {
     httpServer.listen( opts.httpport );
 }
 
-opts.requires.forEach( function( req ) {
-    var canonical = path.resolve( untildify( req ) );
+function loadSystem( system, _canonical, callback ) {
+    console.log( 'Loading: ' + _canonical );
 
-    if ( !fs.existsSync( canonical ) ) {
+    app.systems.push( system );
+
+    if ( !system.init ) {
+        callback();
         return;
     }
 
-    recursiveRequire( {
-        directory: canonical,
-        visit: function( system, _canonical ) {
-            console.log( 'Loading: ' + _canonical );
+    _initializing[ _canonical ] = true;
 
-            app.systems.push( system );
-
-            if ( !system.init ) {
-                return;
-            }
-
-            _initializing[ _canonical ] = true;
-
-            system.init( app, app.server, function( error ) {
-                if ( error ) {
-                    console.error( error );
-                }
-
-                delete _initializing[ _canonical ];
-            } );
-        }
+    system.init( app, app.server, function( error ) {
+        delete _initializing[ _canonical ];
+        callback( error );
     } );
+}
+
+async.eachSeries( opts.requires, function( req, next ) {
+    recursiveRequire( {
+        allowMissing: true,
+        directory: path.resolve( untildify( req ) ),
+        visit: loadSystem
+    }, next );
 } );
 
 (function checkInitialized() {

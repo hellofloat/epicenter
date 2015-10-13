@@ -19,7 +19,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "async": "^1.2.1",
+    "async": "^1.4.2",
     "dashdash": "^1.10.0",
     "es6-shim": "^0.32.2",
     "eventemitter2": "^0.4.14",
