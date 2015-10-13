@@ -120,7 +120,7 @@ if ( sslEnabled ) {
     httpServer.listen( opts.httpport );
 }
 
-function loadSystem( system, _canonical, callback ) {
+function loadSystem( system, _canonical, _filename, callback ) {
     console.log( 'Loading: ' + _canonical );
 
     app.systems.push( system );
