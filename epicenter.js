@@ -16,6 +16,18 @@ var untildify = require( 'untildify' );
 
 var opts = getcli();
 
+var _ready = false;
+var _initialized = false;
+var _initializing = {};
+var _systemsInitialized = {};
+var _requests = {
+    active: 0,
+    total: 0,
+    failed: 0,
+    time: 0
+};
+
+
 var sslEnabled = opts.httpscert && opts.httpskey;
 var serverOptions = {
     name: opts.name
@@ -51,16 +63,6 @@ app.server.use( restify.jsonp() );
 app.server.use( restify.bodyParser() );
 app.server.use( restify.gzipResponse() );
 
-var _ready = false;
-var _initialized = false;
-var _initializing = {};
-var _requests = {
-    active: 0,
-    total: 0,
-    failed: 0,
-    time: 0
-};
-
 app.server.use( function( request, response, next ) {
     var requestStartTime = new Date();
     ++_requests.total;
@@ -88,7 +90,8 @@ app.server.get( '/__epicenter', function( request, response ) {
         averageResponseTime: _requests.time / _requests.total,
         ready: _ready,
         initialized: _initialized,
-        initializing: _initializing
+        initializing: _initializing,
+        systemsInitialized: _systemsInitialized
     } );
 } );
 
@@ -128,9 +131,11 @@ function loadSystem( system, _canonical, callback ) {
     }
 
     _initializing[ _canonical ] = true;
+    _systemsInitialized[ _canonical ] = false;
 
     system.init( app, app.server, function( error ) {
         delete _initializing[ _canonical ];
+        _systemsInitialized[ _canonical ] = true;
         callback( error );
     } );
 }
