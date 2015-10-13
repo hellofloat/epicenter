@@ -18,7 +18,8 @@ var opts = getcli();
 
 var _ready = false;
 var _initialized = false;
-var _initializing = {};
+var _systemsLoaded = {};
+var _systemsInitializing = {};
 var _systemsInitialized = {};
 var _requests = {
     active: 0,
@@ -90,7 +91,8 @@ app.server.get( '/__epicenter', function( request, response ) {
         averageResponseTime: _requests.time / _requests.total,
         ready: _ready,
         initialized: _initialized,
-        initializing: _initializing,
+        systemsLoaded: _systemsLoaded,
+        systemsInitializing: _systemsInitializing,
         systemsInitialized: _systemsInitialized
     } );
 } );
@@ -121,6 +123,8 @@ if ( sslEnabled ) {
 }
 
 function loadSystem( system, _canonical, _filename, callback ) {
+    _systemsLoaded[ _canonical ] = true;
+
     console.log( 'Loading: ' + _canonical );
 
     app.systems.push( system );
@@ -130,11 +134,11 @@ function loadSystem( system, _canonical, _filename, callback ) {
         return;
     }
 
-    _initializing[ _canonical ] = true;
+    _systemsInitializing[ _canonical ] = true;
     _systemsInitialized[ _canonical ] = false;
 
     system.init( app, app.server, function( error ) {
-        delete _initializing[ _canonical ];
+        delete _systemsInitializing[ _canonical ];
         _systemsInitialized[ _canonical ] = true;
         callback( error );
     } );
@@ -153,7 +157,7 @@ async.eachSeries( opts.requires, function( req, next ) {
     }
 
     (function checkInitialized() {
-        _initialized = !!!Object.keys( _initializing ).length;
+        _initialized = !!!Object.keys( _systemsInitializing ).length;
         if ( !_initialized ) {
             setTimeout( checkInitialized, 100 );
         }
