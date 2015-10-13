@@ -141,17 +141,22 @@ async.eachSeries( opts.requires, function( req, next ) {
         directory: path.resolve( untildify( req ) ),
         visit: loadSystem
     }, next );
-} );
-
-(function checkInitialized() {
-    _initialized = !!!Object.keys( _initializing ).length;
-    if ( !_initialized ) {
-        setTimeout( checkInitialized, 100 );
+}, function( error ) {
+    if ( error ) {
+        console.error( error );
+        process.exit( 1 );
     }
-})();
 
-var port = sslEnabled ? opts.httpsport : opts.httpport;
-app.server.listen( port );
-console.log( 'Listening on port: ' + port + ' ...' );
+    (function checkInitialized() {
+        _initialized = !!!Object.keys( _initializing ).length;
+        if ( !_initialized ) {
+            setTimeout( checkInitialized, 100 );
+        }
+    })();
 
-_ready = true;
+    var port = sslEnabled ? opts.httpsport : opts.httpport;
+    app.server.listen( port );
+    console.log( 'Listening on port: ' + port + ' ...' );
+
+    _ready = true;
+} );
