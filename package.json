@@ -1,6 +1,6 @@
 {
   "name": "epicenter",
-  "version": "0.11.1",
+  "version": "1.0.0",
   "description": "Modular Restify server",
   "license": "MIT",
   "author": {

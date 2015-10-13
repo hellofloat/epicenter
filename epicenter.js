@@ -51,6 +51,8 @@ app.server.use( restify.bodyParser() );
 app.server.use( restify.gzipResponse() );
 
 var _ready = false;
+var _initialized = false;
+var _initializing = {};
 var _requests = {
     active: 0,
     total: 0,
@@ -83,7 +85,9 @@ app.server.get( '/__epicenter', function( request, response ) {
         requests: _requests,
         uptime: new Date() - _startTime,
         averageResponseTime: _requests.time / _requests.total,
-        ready: _ready
+        ready: _ready,
+        initialized: _initialized,
+        initializing: _initializing
     } );
 } );
 
@@ -121,8 +125,8 @@ opts.requires.forEach( function( req ) {
 
     recursiveRequire( {
         directory: canonical,
-        visit: function( system, canonical ) {
-            console.log( 'Loading: ' + canonical );
+        visit: function( system, _canonical ) {
+            console.log( 'Loading: ' + _canonical );
 
             app.systems.push( system );
 
@@ -130,10 +134,25 @@ opts.requires.forEach( function( req ) {
                 return;
             }
 
-            system.init( app, app.server );
+            _initializing[ _canonical ] = true;
+
+            system.init( app, app.server, function( error ) {
+                if ( error ) {
+                    console.error( error );
+                }
+
+                delete _initializing[ _canonical ];
+            } );
         }
     } );
 } );
+
+(function checkInitialized() {
+    _initialized = !!!Object.keys( _initializing ).length;
+    if ( !_initialized ) {
+        setTimeout( checkInitialized, 100 );
+    }
+})();
 
 var port = sslEnabled ? opts.httpsport : opts.httpport;
 app.server.listen( port );
