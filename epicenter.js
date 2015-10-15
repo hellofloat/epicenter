@@ -83,6 +83,13 @@ app.server.use( function( request, response, next ) {
 } );
 
 var pkg = require( './package.json' );
+var apiPackage = null;
+try {
+    apiPackage = require( path.join( path.resolve( '.' ), 'package.json' ) );
+}
+catch() {
+    apiPackage = {};
+}
 app.server.get( '/__epicenter', function( request, response ) {
     response.send( {
         version: pkg.version,
@@ -93,7 +100,10 @@ app.server.get( '/__epicenter', function( request, response ) {
         initialized: _initialized,
         systemsLoaded: _systemsLoaded,
         systemsInitializing: _systemsInitializing,
-        systemsInitialized: _systemsInitialized
+        systemsInitialized: _systemsInitialized,
+        api: {
+            version: apiPackage.version
+        }
     } );
 } );
 
