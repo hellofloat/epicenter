@@ -87,7 +87,7 @@ var apiPackage = null;
 try {
     apiPackage = require( path.join( path.resolve( '.' ), 'package.json' ) );
 }
-catch() {
+catch( ex ) {
     apiPackage = {};
 }
 app.server.get( '/__epicenter', function( request, response ) {
