@@ -57,6 +57,8 @@ app.server.on( 'uncaughtException', function ( request, response, route, error )
 app.server.pre( restify.CORS( {
     credentials: true
 } ) );
+app.server.pre( restify.pre.sanitizePath() );
+
 app.server.use( restify.acceptParser( app.server.acceptable ) );
 app.server.use( restify.queryParser() );
 app.server.use( CookieParser.parse );
