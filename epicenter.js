@@ -95,6 +95,7 @@ catch( ex ) {
 app.server.get( '/__epicenter', function( request, response ) {
     response.send( {
         version: pkg.version,
+        node: process.versions,
         requests: _requests,
         uptime: new Date() - _startTime,
         averageResponseTime: _requests.time / _requests.total,
