@@ -6,7 +6,7 @@ var _startTime = new Date();
 require( 'es6-shim' ); // shim the things
 var async = require( 'async' );
 var CookieParser = require( 'restify-cookies' );
-var EventEmitter2 = require( 'eventemitter2' ).EventEmitter2;
+var EventEmitter = require( 'events' );
 var fs = require( 'fs' );
 var getcli = require( './getcli' );
 var path = require( 'path' );
@@ -46,8 +46,8 @@ var app = Object.assign( {
     settings: opts,
     systems: [],
     server: restify.createServer( serverOptions ),
-    eventBus: new EventEmitter2()
-}, EventEmitter2.prototype );
+    eventBus: new EventEmitter()
+}, EventEmitter.prototype );
 
 app.server.on( 'uncaughtException', function ( request, response, route, error ) {
     console.error( 'uncaughtException', error.stack );
