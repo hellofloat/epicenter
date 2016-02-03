@@ -1,13 +1,13 @@
 'use strict';
 
-var async = require( 'async' );
-var fs = require( 'fs' );
-var path = require( 'path' );
-var untildify = require( 'untildify' );
+const async = require( 'async' );
+const fs = require( 'fs' );
+const path = require( 'path' );
+const untildify = require( 'untildify' );
 
 module.exports = recursiveRequire;
 
-var defaults = {
+let defaults = {
     allowMissing: false,
     extensions: [ 'js' ],
     require: require,
@@ -27,7 +27,7 @@ function recursiveRequire( options, callback ) {
 
     if ( !options.check ) {
         options.check = function( filename ) {
-            var regexp = new RegExp( '\\.(' + options.extensions.join( '|' ) + ')$', 'i' );
+            const regexp = new RegExp( '\\.(' + options.extensions.join( '|' ) + ')$', 'i' );
             if ( !regexp.test( filename ) ) {
                 return false;
             }
@@ -36,7 +36,7 @@ function recursiveRequire( options, callback ) {
         };
     }
 
-    var canonical = path.resolve( untildify( options.directory ) );
+    const canonical = path.resolve( untildify( options.directory ) );
 
     fs.readdir( canonical, function( error, files ) {
         if ( error ) {
@@ -51,7 +51,7 @@ function recursiveRequire( options, callback ) {
 
         async.eachSeries( files, function( filename, next ) {
 
-            var canonicalFilename = path.join( canonical, filename );
+            const canonicalFilename = path.join( canonical, filename );
             fs.lstat( canonicalFilename, function( error, stat ) {
                 if ( error ) {
                     next( error );

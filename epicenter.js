@@ -1,36 +1,35 @@
 #!/usr/bin/env node
 'use strict';
 
-var _startTime = new Date();
+const _startTime = new Date();
 
 require( 'es6-shim' ); // shim the things
-var async = require( 'async' );
-var CookieParser = require( 'restify-cookies' );
-var EventEmitter = require( 'events' );
-var fs = require( 'fs' );
-var getcli = require( './getcli' );
-var path = require( 'path' );
-var recursiveRequire = require( './recursive-require' );
-var restify = require( 'restify' );
-var untildify = require( 'untildify' );
+const async = require( 'async' );
+const CookieParser = require( 'restify-cookies' );
+const EventEmitter = require( 'events' );
+const fs = require( 'fs' );
+const getcli = require( './getcli' );
+const path = require( 'path' );
+const recursiveRequire = require( './recursive-require' );
+const restify = require( 'restify' );
+const untildify = require( 'untildify' );
 
-var opts = getcli();
+const opts = getcli();
 
-var _ready = false;
-var _initialized = false;
-var _systemsLoaded = {};
-var _systemsInitializing = {};
-var _systemsInitialized = {};
-var _requests = {
+let _ready = false;
+let _initialized = false;
+let _systemsLoaded = {};
+let _systemsInitializing = {};
+let _systemsInitialized = {};
+let _requests = {
     active: 0,
     total: 0,
     failed: 0,
     time: 0
 };
 
-
-var sslEnabled = opts.httpscert && opts.httpskey;
-var serverOptions = {
+const sslEnabled = opts.httpscert && opts.httpskey;
+let serverOptions = {
     name: opts.name
 };
 
@@ -42,7 +41,7 @@ if ( sslEnabled ) {
     };
 }
 
-var app = Object.assign( {
+let app = Object.assign( {
     settings: opts,
     systems: [],
     server: restify.createServer( serverOptions ),
@@ -84,8 +83,8 @@ app.server.use( function( request, response, next ) {
     next();
 } );
 
-var pkg = require( './package.json' );
-var apiPackage = null;
+const pkg = require( './package.json' );
+let apiPackage = null;
 try {
     apiPackage = require( path.join( path.resolve( '.' ), 'package.json' ) );
 }
@@ -95,6 +94,7 @@ catch( ex ) {
 app.server.get( '/__epicenter', function( request, response ) {
     response.send( {
         version: pkg.version,
+        name: opts.name,
         node: process.versions,
         requests: _requests,
         uptime: new Date() - _startTime,
@@ -104,6 +104,7 @@ app.server.get( '/__epicenter', function( request, response ) {
         systemsLoaded: _systemsLoaded,
         systemsInitializing: _systemsInitializing,
         systemsInitialized: _systemsInitialized,
+        canonical: opts.canonical,
         api: {
             version: apiPackage.version
         }
@@ -113,15 +114,15 @@ app.server.get( '/__epicenter', function( request, response ) {
 if ( sslEnabled ) {
     console.log( 'HTTPS enabled' );
 
-    var httpServer = restify.createServer( {
+    let httpServer = restify.createServer( {
         name: opts.name
     } );
     if ( opts.httpsredirect ) {
         console.log( '  Redirecting unsecured requests...' );
         httpServer.pre( function( request, response ) {
-            var hostString = request.headers.host;
-            var hostInfo = hostString.split( ':' );
-            var host = hostInfo[ 0 ];
+            const hostString = request.headers.host;
+            const hostInfo = hostString.split( ':' );
+            const host = hostInfo[ 0 ];
             response.header( 'Location', 'https://' + host + request.url );
             response.send( 301 );
         } );
@@ -157,6 +158,8 @@ function loadSystem( system, _canonical, _filename, callback ) {
     } );
 }
 
+const MAX_INITIALIZATION_TIME = 30000;
+
 async.eachSeries( opts.requires, function( req, next ) {
     recursiveRequire( {
         allowMissing: true,
@@ -169,14 +172,23 @@ async.eachSeries( opts.requires, function( req, next ) {
         process.exit( 1 );
     }
 
+    const initializationCheckStartTime = new Date();
     (function checkInitialized() {
         _initialized = !!!Object.keys( _systemsInitializing ).length;
         if ( !_initialized ) {
+
+            const initializationTime = new Date() - initializationCheckStartTime;
+            if ( initializationTime > MAX_INITIALIZATION_TIME ) {
+                console.error( 'Exceeded max initialization wait time: ' + MAX_INITIALIZATION_TIME );
+                process.exit( 1 );
+            }
+
             setTimeout( checkInitialized, 100 );
+            return;
         }
     })();
 
-    var port = sslEnabled ? opts.httpsport : opts.httpport;
+    const port = sslEnabled ? opts.httpsport : opts.httpport;
     app.server.listen( port );
     console.log( 'Listening on port: ' + port + ' ...' );
 

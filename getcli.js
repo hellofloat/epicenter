@@ -1,10 +1,10 @@
 'use strict';
 
-var dashdash = require( 'dashdash' );
-var path = require( 'path' );
+const dashdash = require( 'dashdash' );
+const path = require( 'path' );
 
 module.exports = function() {
-	var options = [ {
+	const options = [ {
 		name: 'version',
 		type: 'bool',
 		help: 'Print version and exit.'
@@ -77,13 +77,13 @@ module.exports = function() {
 		default: false
 	} ];
 
-	var scriptName = path.basename( require.main.filename );
+	const scriptName = path.basename( require.main.filename );
 
-	var parser = dashdash.createParser( {
+	const parser = dashdash.createParser( {
 		options: options
 	} );
 
-	var opts = {};
+	let opts = {};
 	try {
 		opts = parser.parse( process.argv );
 	}
@@ -93,13 +93,13 @@ module.exports = function() {
 	}
 
 	if ( opts.version ) {
-		var pkg = require( './package.json' );
+		const pkg = require( './package.json' );
 		console.log( scriptName + ' v' + pkg.version );
 		process.exit( 0 );
 	}
 
 	if ( opts.help ) {
-		var help = parser.help( {
+		const help = parser.help( {
 			includeEnv: true
 		} ).trimRight();
 
