@@ -3,7 +3,6 @@
 
 const _startTime = new Date();
 
-require( 'es6-shim' ); // shim the things
 const async = require( 'async' );
 const CookieParser = require( 'restify-cookies' );
 const EventEmitter = require( 'events' );
@@ -12,7 +11,10 @@ const getcli = require( './getcli' );
 const path = require( 'path' );
 const recursiveRequire = require( './recursive-require' );
 const restify = require( 'restify' );
+const SegfaultHandler = require( 'segfault-handler' );
 const untildify = require( 'untildify' );
+
+SegfaultHandler.registerHandler( 'epicenter.crash.log' );
 
 const opts = getcli();
 
