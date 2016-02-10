@@ -8,6 +8,7 @@ const untildify = require( 'untildify' );
 module.exports = recursiveRequire;
 
 let defaults = {
+    quiet: false,
     allowMissing: false,
     extensions: [ 'js' ],
     require: require,
@@ -37,49 +38,74 @@ function recursiveRequire( options, callback ) {
     }
 
     const canonical = path.resolve( untildify( options.directory ) );
+    let files = null;
 
-    fs.readdir( canonical, function( error, files ) {
-        if ( error ) {
-            if ( options.allowMissing && error.code && error.code === 'ENOENT' ) {
-                callback();
-                return;
-            }
-
-            callback( error );
-            return;
-        }
-
-        async.eachSeries( files, function( filename, next ) {
-
-            const canonicalFilename = path.join( canonical, filename );
-            fs.lstat( canonicalFilename, function( error, stat ) {
+    async.series( [
+        function getFileList( next ) {
+            fs.readdir( canonical, function( error, _files ) {
                 if ( error ) {
+                    if ( options.allowMissing && error.code && error.code === 'ENOENT' ) {
+                        next( {
+                            skip: true
+                        } );
+                        return;
+                    }
+
                     next( error );
                     return;
                 }
 
-                if ( stat.isDirectory() ) {
-                    recursiveRequire( Object.assign( options, {
-                        directory: canonicalFilename
-                    } ), next );
-                    return;
-                }
-
-                if ( !options.check( canonicalFilename ) ) {
-                    next();
-                    return;
-                }
-
-                // Require the file.
-                var required = options.require( canonicalFilename );
-
-                if ( options.visit ) {
-                    options.visit( required, canonicalFilename, filename, next );
-                    return;
-                }
-
+                files = _files;
                 next();
             } );
-        }, callback );
+        },
+
+        function loadFiles( next ) {
+            async.eachSeries( files, function( filename, _next ) {
+
+                const canonicalFilename = path.join( canonical, filename );
+                fs.lstat( canonicalFilename, function( error, stat ) {
+                    if ( error ) {
+                        _next( error );
+                        return;
+                    }
+
+                    if ( stat.isDirectory() ) {
+                        recursiveRequire( Object.assign( options, {
+                            directory: canonicalFilename
+                        } ), _next );
+                        return;
+                    }
+
+                    if ( !options.check( canonicalFilename ) ) {
+                        _next();
+                        return;
+                    }
+
+                    if ( !options.quiet ) {
+                        console.log( 'Loading: ' + canonicalFilename );
+                    }
+
+                    var required = options.require( canonicalFilename );
+
+                    if ( options.visit ) {
+                        if ( !options.quiet ) {
+                            console.log( 'Visiting: ' + canonicalFilename );
+                        }
+
+                        options.visit( required, canonicalFilename, filename, _next );
+                        return;
+                    }
+
+                    _next();
+                } );
+            }, next );
+        }
+    ], function( error ) {
+        if ( error && error.skip ) {
+            error = null;
+        }
+
+        callback( error );
     } );
 }

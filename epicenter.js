@@ -138,11 +138,12 @@ if ( sslEnabled ) {
 function loadSystem( system, _canonical, _filename, callback ) {
     _systemsLoaded[ _canonical ] = true;
 
-    process.stdout.write( 'Loading: ' + _canonical + ' ... ' );
+    console.log( 'Initializing: ' + _canonical + ' ... ' );
 
     app.systems.push( system );
 
     if ( !system.init ) {
+        _systemsInitialized[ _canonical ] = true;
         console.log( 'done.' );
         callback();
         return;
@@ -170,6 +171,7 @@ const MAX_INITIALIZATION_TIME = 30000;
 
 async.eachSeries( opts.requires, function( req, next ) {
     recursiveRequire( {
+        quiet: !opts.verbose,
         allowMissing: true,
         directory: path.resolve( untildify( req ) ),
         visit: loadSystem
