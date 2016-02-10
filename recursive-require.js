@@ -8,7 +8,7 @@ const untildify = require( 'untildify' );
 module.exports = recursiveRequire;
 
 let defaults = {
-    quiet: false,
+    verbose: false,
     allowMissing: false,
     extensions: [ 'js' ],
     require: require,
@@ -82,14 +82,14 @@ function recursiveRequire( options, callback ) {
                         return;
                     }
 
-                    if ( !options.quiet ) {
+                    if ( options.verbose ) {
                         console.log( 'Loading: ' + canonicalFilename );
                     }
 
                     var required = options.require( canonicalFilename );
 
                     if ( options.visit ) {
-                        if ( !options.quiet ) {
+                        if ( options.verbose ) {
                             console.log( 'Visiting: ' + canonicalFilename );
                         }
 

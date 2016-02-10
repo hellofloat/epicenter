@@ -15,6 +15,10 @@ const untildify = require( 'untildify' );
 
 const opts = getcli();
 
+if ( opts.verbose ) {
+    console.log( 'Epicenter verbose output enabled.' );
+}
+
 let _ready = false;
 let _initialized = false;
 let _systemsLoaded = {};
@@ -171,7 +175,7 @@ const MAX_INITIALIZATION_TIME = 30000;
 
 async.eachSeries( opts.requires, function( req, next ) {
     recursiveRequire( {
-        quiet: !opts.verbose,
+        verbose: opts.verbose,
         allowMissing: true,
         directory: path.resolve( untildify( req ) ),
         visit: loadSystem
