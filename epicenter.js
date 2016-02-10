@@ -11,10 +11,7 @@ const getcli = require( './getcli' );
 const path = require( 'path' );
 const recursiveRequire = require( './recursive-require' );
 const restify = require( 'restify' );
-const SegfaultHandler = require( 'segfault-handler' );
 const untildify = require( 'untildify' );
-
-SegfaultHandler.registerHandler( 'epicenter.crash.log' );
 
 const opts = getcli();
 
