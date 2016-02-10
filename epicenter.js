@@ -138,11 +138,12 @@ if ( sslEnabled ) {
 function loadSystem( system, _canonical, _filename, callback ) {
     _systemsLoaded[ _canonical ] = true;
 
-    console.log( 'Loading: ' + _canonical );
+    process.stdout.write( 'Loading: ' + _canonical + ' ... ' );
 
     app.systems.push( system );
 
     if ( !system.init ) {
+        console.log( 'done.' );
         callback();
         return;
     }
@@ -153,6 +154,14 @@ function loadSystem( system, _canonical, _filename, callback ) {
     system.init( app, app.server, function( error ) {
         delete _systemsInitializing[ _canonical ];
         _systemsInitialized[ _canonical ] = true;
+
+        if ( error ) {
+            console.error( 'error: ' + require( 'util' ).inspect( error, { depth: null } ) );
+        }
+        else {
+            console.log( 'done.' );
+        }
+
         callback( error );
     } );
 }
