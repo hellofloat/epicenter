@@ -126,9 +126,6 @@ module.exports = function() {
 		process.exit( 1 );
 	}
 
-	console.log( opts );
-	process.exit( 0 );
-
 	if ( opts.version ) {
 		const pkg = require( './package.json' );
 		console.log( scriptName + ' v' + pkg.version );
