@@ -1,6 +1,6 @@
 {
   "name": "epicenter",
-  "version": "3.6.5",
+  "version": "3.6.6",
   "description": "Modular Restify server",
   "license": "MIT",
   "author": {
@@ -24,6 +24,7 @@
     "dashdash": "^1.13.0",
     "restify": "^4.0.4",
     "restify-cookies": "^0.2.0",
+    "restify-cors-middleware": "0.0.6",
     "untildify": "^2.1.0"
   }
 }

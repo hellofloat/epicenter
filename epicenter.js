@@ -5,6 +5,7 @@ const _startTime = new Date();
 
 const async = require( 'async' );
 const CookieParser = require( 'restify-cookies' );
+const CORSMiddleware = require( 'restify-cors-middleware' );
 const EventEmitter = require( 'events' );
 const fs = require( 'fs' );
 const getcli = require( './getcli' );
@@ -60,21 +61,21 @@ app.server.on( 'uncaughtException', function ( request, response, route, error )
     response.send( error );
 } );
 
-if ( opts.origins ) {
-    console.log( 'CORS: Limiting origins to: ' + opts.origins.join( ', ' ) );
+if ( opts.cors.origins && ( opts.cors.origins.length > 1 || opts.cors.origins[ 0 ] !== '*' ) ) {
+    console.log( 'CORS: Limiting origins to: ' + opts.cors.origins.join( ', ' ) );
 }
 
-if ( !opts.credentials ) {
-    console.log( 'CORS: Disallowing credentials' );
+if ( opts.cors.allowHeaders && opts.cors.allowHeaders.length ) {
+    console.log( 'CORS: Adding allowed headers: ' + opts.cors.allowHeaders.join( ', ' ) );
 }
 
-app.server.pre( restify.CORS( {
-    origins: opts.origins,
-    credentials: opts.credentials
-} ) );
+const cors = CORSMiddleware( opts.cors );
+
+app.server.pre( cors.preflight );
 app.server.pre( restify.pre.sanitizePath() );
 
 app.server.use( restify.fullResponse() ); // ensure CORS plugin can control all responses
+app.server.use( cors.actual );
 app.server.use( restify.acceptParser( app.server.acceptable ) );
 app.server.use( restify.queryParser() );
 app.server.use( CookieParser.parse );

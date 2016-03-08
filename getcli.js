@@ -97,19 +97,20 @@ module.exports = function() {
 		type: 'bool',
 		help: 'If specified, will redirect all connections on the unsecured port to the HTTPS port.',
 		default: false
-	},  {
-		names: [ 'origin', 'o' ],
-		env: 'EPICENTER_ORIGINS',
+	}, {
+		names: [ 'corsorigin', 'co' ],
+		env: 'EPICENTER_CORS_ORIGINS',
 		type: 'commaSeparated',
 		help: 'Specify allowed CORS origins. If none are specified, the default * is used.',
 		helpArg: 'ORIGIN',
 		default: [ '*' ]
 	}, {
-		name: 'credentials',
-		env: 'EPICENTER_CREDENTIALS',
-		type: 'smartBool',
-		help: 'Controls CORS credentials setting.',
-		default: true
+		names: [ 'corsheader', 'ch' ],
+		env: 'EPICENTER_CORS_HEADERS',
+		type: 'commaSeparated',
+		help: 'Specify allowed CORS headers.',
+		helpArg: 'HEADER',
+		default: []
 	} ];
 
 	const scriptName = path.basename( require.main.filename );
@@ -151,8 +152,12 @@ module.exports = function() {
 	opts.requires = opts.require;
 	delete opts.require;
 
-	opts.origins = opts.origin;
-	delete opts.origin;
+	opts.cors = {
+		origins: opts.corsorigin,
+		allowHeaders: opts.corsheader
+	};
+	delete opts.corsorigins;
+	delete opts.corsheader;
 
 	if ( !opts.canonical ) {
 		opts.canonical = opts.httpscert && opts.httpskey ? 'https://localhost:' + opts.httpsport : 'http://localhost:' + opts.httpport;
