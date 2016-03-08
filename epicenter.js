@@ -56,6 +56,14 @@ app.server.on( 'uncaughtException', function ( request, response, route, error )
     response.send( error );
 } );
 
+if ( opts.origins ) {
+    console.log( 'CORS: Limiting origins to: ' + opts.origins.join( ', ' ) );
+}
+
+if ( !opts.credentials ) {
+    console.log( 'CORS: Disallowing credentials' );
+}
+
 app.server.pre( restify.CORS( {
     origins: opts.origins && opts.origins.length ? opts.origins : [ '*' ],
     credentials: opts.credentials
