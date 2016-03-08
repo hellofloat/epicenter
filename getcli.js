@@ -1,9 +1,31 @@
 'use strict';
 
+const boolean = require( 'boolean' );
 const dashdash = require( 'dashdash' );
 const path = require( 'path' );
 
 module.exports = function() {
+
+	dashdash.addOptionType( {
+	    name: 'commaSeparated',
+	    takesArg: true,
+	    helpArg: 'ARG[,ARG]',
+		array: true,
+		arrayFlatten: true,
+	    parseArg: function parseCommaSeparated( option, optstr, arg ) {
+			return arg.split( ',' );
+		}
+    } );
+
+	dashdash.addOptionType( {
+	    name: 'smartBool',
+	    takesArg: true,
+	    helpArg: '[true|false]',
+	    parseArg: function parseSmartBool( option, optstr, arg ) {
+			return boolean( typeof arg !== 'undefined' ? arg : true );
+		}
+    } );
+
 	const options = [ {
 		name: 'version',
 		type: 'bool',
@@ -33,21 +55,21 @@ module.exports = function() {
 		name: 'name',
 		env: 'EPICENTER_NAME',
 		type: 'string',
-		help: 'Specify the service name for restify. Default: epicenter',
+		help: 'Specify the service name for restify.',
 		helpArg: 'NAME',
 		default: 'epicenter'
 	}, {
 		name: 'httpport',
 		env: 'EPICENTER_HTTP_PORT',
 		type: 'positiveInteger',
-		help: 'Specify the HTTP port to listen on. Default: 8000',
+		help: 'Specify the HTTP port to listen on.',
 		helpArg: 'PORT',
 		default: 8000
 	}, {
 		name: 'httpsport',
 		env: 'EPICENTER_HTTPS_PORT',
 		type: 'positiveInteger',
-		help: 'Specify the HTTPS port to listen on. Defuault: 4443',
+		help: 'Specify the HTTPS port to listen on.',
 		helpArg: 'PORT',
 		default: 4443
 	}, {
@@ -66,7 +88,7 @@ module.exports = function() {
 		name: 'httpsciphers',
 		env: 'EPICENTER_HTTPS_CIPHERS',
 		type: 'string',
-		help: 'Specify the SSL ciphers. Default: ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA',
+		help: 'Specify the SSL ciphers.',
 		helpArg: 'CIPHERS',
 		default: 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA'
 	}, {
@@ -78,13 +100,13 @@ module.exports = function() {
 	},  {
 		names: [ 'origin', 'o' ],
 		env: 'EPICENTER_ORIGINS',
-		type: 'arrayOfString',
+		type: 'commaSeparated',
 		help: 'Specify allowed CORS origins. If none are specified, the default * is used.',
 		helpArg: 'ORIGIN'
 	}, {
 		name: 'credentials',
 		env: 'EPICENTER_CREDENTIALS',
-		type: 'bool',
+		type: 'smartBool',
 		help: 'Controls CORS credentials setting.',
 		default: true
 	} ];
@@ -104,6 +126,9 @@ module.exports = function() {
 		process.exit( 1 );
 	}
 
+	console.log( opts );
+	process.exit( 0 );
+
 	if ( opts.version ) {
 		const pkg = require( './package.json' );
 		console.log( scriptName + ' v' + pkg.version );
@@ -112,7 +137,9 @@ module.exports = function() {
 
 	if ( opts.help ) {
 		const help = parser.help( {
-			includeEnv: true
+			includeEnv: true,
+			includeDefault: true,
+			maxCol: process.stdout.columns ? process.stdout.columns - 1 : 80
 		} ).trimRight();
 
 		console.log( 'usage: node ' + scriptName + ' [OPTIONS]\n' + 'options:\n' + help );
