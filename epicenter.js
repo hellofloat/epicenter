@@ -69,7 +69,7 @@ if ( !opts.credentials ) {
 }
 
 app.server.pre( restify.CORS( {
-    origins: opts.origins && opts.origins.length ? opts.origins : [ '*' ],
+    origins: opts.origins,
     credentials: opts.credentials
 } ) );
 app.server.pre( restify.pre.sanitizePath() );

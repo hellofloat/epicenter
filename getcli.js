@@ -102,7 +102,8 @@ module.exports = function() {
 		env: 'EPICENTER_ORIGINS',
 		type: 'commaSeparated',
 		help: 'Specify allowed CORS origins. If none are specified, the default * is used.',
-		helpArg: 'ORIGIN'
+		helpArg: 'ORIGIN',
+		default: [ '*' ]
 	}, {
 		name: 'credentials',
 		env: 'EPICENTER_CREDENTIALS',
@@ -149,6 +150,9 @@ module.exports = function() {
 
 	opts.requires = opts.require;
 	delete opts.require;
+
+	opts.origins = opts.origin;
+	delete opts.origin;
 
 	if ( !opts.canonical ) {
 		opts.canonical = opts.httpscert && opts.httpskey ? 'https://localhost:' + opts.httpsport : 'http://localhost:' + opts.httpport;
