@@ -74,7 +74,11 @@ const cors = CORSMiddleware( opts.cors );
 app.server.pre( cors.preflight );
 app.server.pre( restify.pre.sanitizePath() );
 
-app.server.use( cors.actual );
+app.server.use( restify.CORS( {
+      credentials: opts.cors.origins[ 0 ] === '*' ? false : true,
+      origins: opts.cors.origins,
+      headers: opts.cors.allowHeaders
+} ) );
 app.server.use( restify.acceptParser( app.server.acceptable ) );
 app.server.use( restify.queryParser() );
 app.server.use( CookieParser.parse );
