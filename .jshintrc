@@ -6,7 +6,6 @@
     "forin": true,
     "freeze": true,
     "futurehostile": true,
-    "globalstrict": true,
     "latedef": "nofunc",
     "maxcomplexity": 10,
     "maxdepth": 3,

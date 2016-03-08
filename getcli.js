@@ -75,6 +75,18 @@ module.exports = function() {
 		type: 'bool',
 		help: 'If specified, will redirect all connections on the unsecured port to the HTTPS port.',
 		default: false
+	},  {
+		names: [ 'origin', 'o' ],
+		env: 'EPICENTER_ORIGINS',
+		type: 'arrayOfString',
+		help: 'Specify allowed CORS origins. If none are specified, the default * is used.',
+		helpArg: 'ORIGIN'
+	}, {
+		name: 'credentials',
+		env: 'EPICENTER_CREDENTIALS',
+		type: 'bool',
+		help: 'Controls CORS credentials setting.',
+		default: true
 	} ];
 
 	const scriptName = path.basename( require.main.filename );

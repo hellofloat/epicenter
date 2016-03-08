@@ -57,7 +57,8 @@ app.server.on( 'uncaughtException', function ( request, response, route, error )
 } );
 
 app.server.pre( restify.CORS( {
-    credentials: true
+    origins: opts.origins && opts.origins.length ? opts.origins : [ '*' ],
+    credentials: opts.credentials
 } ) );
 app.server.pre( restify.pre.sanitizePath() );
 
