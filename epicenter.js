@@ -62,6 +62,7 @@ app.server.pre( restify.CORS( {
 } ) );
 app.server.pre( restify.pre.sanitizePath() );
 
+app.server.use( restify.fullResponse() ); // ensure CORS plugin can control all responses
 app.server.use( restify.acceptParser( app.server.acceptable ) );
 app.server.use( restify.queryParser() );
 app.server.use( CookieParser.parse );
