@@ -13,7 +13,11 @@ const recursiveRequire = require( './recursive-require' );
 const restify = require( 'restify' );
 const untildify = require( 'untildify' );
 
+const pkg = require( './package.json' );
+
 const opts = getcli();
+
+console.log( 'Epicenter (' + pkg.version + ') starting...' );
 
 if ( opts.verbose ) {
     console.log( 'Epicenter verbose output enabled.' );
@@ -96,7 +100,6 @@ app.server.use( function( request, response, next ) {
     next();
 } );
 
-const pkg = require( './package.json' );
 let apiPackage = null;
 try {
     apiPackage = require( path.join( path.resolve( '.' ), 'package.json' ) );
