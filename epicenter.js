@@ -74,7 +74,6 @@ const cors = CORSMiddleware( opts.cors );
 app.server.pre( cors.preflight );
 app.server.pre( restify.pre.sanitizePath() );
 
-app.server.use( restify.fullResponse() ); // ensure CORS plugin can control all responses
 app.server.use( cors.actual );
 app.server.use( restify.acceptParser( app.server.acceptable ) );
 app.server.use( restify.queryParser() );
