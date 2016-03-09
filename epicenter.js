@@ -69,7 +69,8 @@ app.addOrigin = function( origin ) {
     self.origins.push( origin );
     self.cors = cors( {
         origin: self.origins,
-        allowedHeaders: self.allowedHeaders
+        allowedHeaders: self.allowedHeaders,
+        credentials: true
     } );
 };
 
