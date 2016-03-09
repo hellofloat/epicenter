@@ -73,8 +73,8 @@ app.addOrigin = function( origin ) {
     } );
 };
 
-console.log( 'CORS: allowed headers: ' + app.allowHeaders.join( ', ' ) );
-console.log( 'CORS: origins: ' + app.origins.join( ', ' ) );
+console.log( 'CORS: allowed headers: ' + ( opts.cors.allowedHeaders || [] ).join( ', ' ) );
+console.log( 'CORS: origins: ' + ( opts.cors.origins || [ '*' ] ).join( ', ' ) );
 
 app.allowedHeaders = opts.cors.allowedHeaders;
 app.origins = opts.cors.origins.map( app.addOrigin.bind( app ) );
