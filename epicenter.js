@@ -5,10 +5,11 @@ const _startTime = new Date();
 
 const async = require( 'async' );
 const CookieParser = require( 'restify-cookies' );
-const CORSMiddleware = require( 'restify-cors-middleware' );
+const cors = require( 'cors' );
 const EventEmitter = require( 'events' );
 const fs = require( 'fs' );
 const getcli = require( './getcli' );
+const globToRegExp = require( 'glob-to-regexp' );
 const path = require( 'path' );
 const recursiveRequire = require( './recursive-require' );
 const restify = require( 'restify' );
@@ -61,24 +62,37 @@ app.server.on( 'uncaughtException', function ( request, response, route, error )
     response.send( error );
 } );
 
-if ( opts.cors.origins && ( opts.cors.origins.length > 1 || opts.cors.origins[ 0 ] !== '*' ) ) {
-    console.log( 'CORS: Limiting origins to: ' + opts.cors.origins.join( ', ' ) );
-}
+app.addOrigin = function( origin ) {
+    const self = this;
+    self.origins = self.origins || [];
+    origin = origin === '*' ? origin : origin.indexOf( '*' ) !== -1 ? globToRegExp( origin ) : origin;
+    self.origins.push( origin );
+    self.cors = cors( {
+        origin: self.origins,
+        allowedHeaders: self.allowedHeaders
+    } );
+};
 
-if ( opts.cors.allowHeaders && opts.cors.allowHeaders.length ) {
-    console.log( 'CORS: Adding allowed headers: ' + opts.cors.allowHeaders.join( ', ' ) );
-}
+console.log( 'CORS: allowed headers: ' + app.allowHeaders.join( ', ' ) );
+console.log( 'CORS: origins: ' + app.origins.join( ', ' ) );
 
-const cors = CORSMiddleware( opts.cors );
+app.allowedHeaders = opts.cors.allowedHeaders;
+app.origins = opts.cors.origins.map( app.addOrigin.bind( app ) );
 
-app.server.pre( cors.preflight );
+app.server.pre( function( request, response, next ) {
+    if ( !request.method || !request.method.toUpperCase || request.method.toUpperCase() !== 'OPTIONS' ) {
+        next();
+        return;
+    }
+
+    app.cors( request, response, next );
+} );
+
 app.server.pre( restify.pre.sanitizePath() );
 
-app.server.use( restify.CORS( {
-      credentials: opts.cors.origins[ 0 ] === '*' ? false : true,
-      origins: opts.cors.origins,
-      headers: opts.cors.allowHeaders
-} ) );
+app.server.use( function( request, response, next ) {
+    app.cors( request, response, next );
+} );
 app.server.use( restify.acceptParser( app.server.acceptable ) );
 app.server.use( restify.queryParser() );
 app.server.use( CookieParser.parse );

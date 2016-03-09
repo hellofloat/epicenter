@@ -110,7 +110,7 @@ module.exports = function() {
 		type: 'commaSeparated',
 		help: 'Specify allowed CORS headers.',
 		helpArg: 'HEADER',
-		default: []
+		default: null
 	} ];
 
 	const scriptName = path.basename( require.main.filename );
@@ -154,7 +154,7 @@ module.exports = function() {
 
 	opts.cors = {
 		origins: opts.corsorigin,
-		allowHeaders: opts.corsheader
+		allowedHeaders: opts.corsheader
 	};
 	delete opts.corsorigins;
 	delete opts.corsheader;
