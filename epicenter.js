@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 'use strict';
 
 const _startTime = new Date();
@@ -9,11 +10,13 @@ const cors = require( 'cors' );
 const EventEmitter = require( 'events' );
 const fs = require( 'fs' );
 const getcli = require( './getcli' );
+const getRequestIP = require( 'get-request-ip' );
 const globToRegExp = require( 'glob-to-regexp' );
 const path = require( 'path' );
 const recursiveRequire = require( './recursive-require' );
 const restify = require( 'restify' );
 const untildify = require( 'untildify' );
+const uuid = require( 'node-uuid' );
 
 const pkg = require( './package.json' );
 
@@ -57,7 +60,7 @@ let app = Object.assign( {
     eventBus: new EventEmitter()
 }, EventEmitter.prototype );
 
-app.server.on( 'uncaughtException', function ( request, response, route, error ) {
+app.server.on( 'uncaughtException', function( request, response, route, error ) {
     console.error( 'uncaughtException', error.stack );
     response.send( error );
 } );
@@ -119,11 +122,43 @@ app.server.use( function( request, response, next ) {
     next();
 } );
 
+if ( !opts.norequestlogging ) {
+    app.use( function( request, response, next ) {
+        request.__startTime = new Date();
+        request.__initialBytesWritten = request.socket.socket ? request.socket.socket.bytesWritten : request.socket.bytesWritten;
+
+        response.on( 'finish', function() {
+            let socket = request.socket.socket ? request.socket.socket : request.socket;
+            const requestInfo = {
+                ip: getRequestIP( request ),
+                date: request.__startTime.toUTCString(),
+                request: {
+                    method: request.method,
+                    url: request.url,
+                    version: 'HTTP/' + request.httpVersion,
+                    protocol: 'HTTP' + ( request.connection.encrypted ? 'S' : '' ),
+                    agent: request.headers[ 'user-agent' ]
+                },
+                status: request.res && request.res.statusCode,
+                responseTime: request.__startTime ? new Date() - request.__startTime : -1,
+                bytesSent: socket.bytesWritten - request.__initialBytesWritten,
+                referrer: request.headers.referer || request.headers.referrer,
+                id: uuid.v4()
+            };
+
+            console.log( requestInfo.ip + ' ' + requestInfo.request.agent + ' [' + requestInfo.date + ']' + ' "' + requestInfo.request.method + ' ' + requestInfo.request.url + ' ' + requestInfo.request.version + '" ' + requestInfo.status + ' ' + requestInfo.bytesSent + ' ' + requestInfo.responseTime + 'ms', requestInfo );
+        } );
+
+        next();
+    } );
+}
+
+
 let apiPackage = null;
 try {
     apiPackage = require( path.join( path.resolve( '.' ), 'package.json' ) );
 }
-catch( ex ) {
+catch ( ex ) {
     apiPackage = {};
 }
 app.server.get( '/__epicenter', function( request, response ) {
@@ -193,7 +228,9 @@ function loadSystem( system, _canonical, _filename, callback ) {
         _systemsInitialized[ _canonical ] = true;
 
         if ( error ) {
-            console.error( 'error: ' + require( 'util' ).inspect( error, { depth: null } ) );
+            console.error( 'error: ' + require( 'util' ).inspect( error, {
+                depth: null
+            } ) );
         }
         else {
             console.log( 'done.' );
@@ -219,7 +256,7 @@ async.eachSeries( opts.requires, function( req, next ) {
     }
 
     const initializationCheckStartTime = new Date();
-    (function checkInitialized() {
+    ( function checkInitialized() {
         _initialized = !!!Object.keys( _systemsInitializing ).length;
         if ( !_initialized ) {
 
@@ -232,7 +269,7 @@ async.eachSeries( opts.requires, function( req, next ) {
             setTimeout( checkInitialized, 100 );
             return;
         }
-    })();
+    } )();
 
     const port = sslEnabled ? opts.httpsport : opts.httpport;
     app.server.listen( port );
