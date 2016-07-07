@@ -128,6 +128,8 @@ if ( !opts.norequestlogging ) {
         request.__initialBytesWritten = request.socket.socket ? request.socket.socket.bytesWritten : request.socket.bytesWritten;
 
         response.on( 'finish', function() {
+            console.dir( request );
+
             let socket = request.socket.socket ? request.socket.socket : request.socket;
             const requestInfo = {
                 ip: getRequestIP( request ),
@@ -146,7 +148,7 @@ if ( !opts.norequestlogging ) {
                 id: uuid.v4()
             };
 
-            console.log( requestInfo.ip + ' ' + requestInfo.request.agent + ' [' + requestInfo.date + ']' + ' "' + requestInfo.request.method + ' ' + requestInfo.request.url + ' ' + requestInfo.request.version + '" ' + requestInfo.status + ' ' + requestInfo.bytesSent + ' ' + requestInfo.responseTime + 'ms', requestInfo );
+            console.log( requestInfo.ip + ' ' + requestInfo.request.agent + ' [' + requestInfo.date + ']' + ' "' + requestInfo.request.method + ' ' + requestInfo.request.url + ' ' + requestInfo.request.version + '" ' + requestInfo.status + ' ' + requestInfo.bytesSent + ' ' + requestInfo.responseTime + 'ms' );
         } );
 
         next();
