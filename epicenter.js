@@ -128,8 +128,6 @@ if ( !opts.norequestlogging ) {
         request.__initialBytesWritten = request.socket.socket ? request.socket.socket.bytesWritten : request.socket.bytesWritten;
 
         response.on( 'finish', function() {
-            console.dir( response );
-
             let socket = request.socket.socket ? request.socket.socket : request.socket;
             const requestInfo = {
                 ip: getRequestIP( request ),
@@ -141,7 +139,7 @@ if ( !opts.norequestlogging ) {
                     protocol: 'HTTP' + ( request.connection.encrypted ? 'S' : '' ),
                     agent: request.headers[ 'user-agent' ]
                 },
-                status: response.code,
+                status: response.statusCode,
                 responseTime: request.__startTime ? new Date() - request.__startTime : -1,
                 bytesSent: socket.bytesWritten - request.__initialBytesWritten,
                 referrer: request.headers.referer || request.headers.referrer,
