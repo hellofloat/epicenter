@@ -123,7 +123,7 @@ app.server.use( function( request, response, next ) {
 } );
 
 if ( !opts.norequestlogging ) {
-    app.use( function( request, response, next ) {
+    app.server.use( function( request, response, next ) {
         request.__startTime = new Date();
         request.__initialBytesWritten = request.socket.socket ? request.socket.socket.bytesWritten : request.socket.bytesWritten;
 
