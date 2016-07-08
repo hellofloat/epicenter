@@ -123,6 +123,22 @@ app.server.use( function( request, response, next ) {
     next();
 } );
 
+app.logger = function( requestInfo ) {
+    switch ( opts.logformat ) {
+        case 'text':
+            console.log( `${ requestInfo.date } | ${ requestInfo.ip } | ${ requestInfo.request.agent } | ${ requestInfo.request.method } ${ requestInfo.request.url } ${ requestInfo.request.version } | ${ requestInfo.status } | ${ requestInfo.bytesSent }b | ${ requestInfo.responseTime }ms` );
+            break;
+        case 'json':
+            try {
+                console.log( JSON.stringify( requestInfo ) );
+            }
+            catch ( ex ) {
+                console.warn( ex );
+            }
+            break;
+    }
+};
+
 if ( !opts.norequestlogging ) {
     app.server.use( function( request, response, next ) {
         request.__startTime = new Date();
@@ -138,7 +154,8 @@ if ( !opts.norequestlogging ) {
                     url: request.url,
                     version: 'HTTP/' + request.httpVersion,
                     protocol: 'HTTP' + ( request.connection.encrypted ? 'S' : '' ),
-                    agent: request.headers[ 'user-agent' ]
+                    agent: request.headers[ 'user-agent' ],
+                    headers: request.headers
                 },
                 status: response.statusCode,
                 responseTime: request.__startTime ? new Date() - request.__startTime : -1,
@@ -147,20 +164,9 @@ if ( !opts.norequestlogging ) {
                 id: uuid.v4()
             };
 
-            switch ( opts.logformat ) {
-                case 'text':
-                    console.log( `${ requestInfo.date } | ${ requestInfo.ip } | ${ requestInfo.request.agent } | ${ requestInfo.request.method } ${ requestInfo.request.url } ${ requestInfo.request.version } | ${ requestInfo.status } | ${ requestInfo.bytesSent }b | ${ requestInfo.responseTime }ms` );
-                    break;
-                case 'json':
-                    try {
-                        console.log( JSON.stringify( requestInfo ) );
-                    }
-                    catch ( ex ) {
-                        console.warn( ex );
-                    }
-                    break;
+            if ( app.logger ) {
+                app.logger( requestInfo );
             }
-
         } );
 
         next();
