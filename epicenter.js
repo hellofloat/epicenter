@@ -141,6 +141,12 @@ app.logger = function( requestInfo ) {
 
 if ( !opts.norequestlogging ) {
     app.server.use( function( request, response, next ) {
+        // do not track requests to status url
+        if ( request.url.indexOf( '/__epicenter' ) === 0 ) {
+            next();
+            return;
+        }
+
         request.__startTime = new Date();
         request.__initialBytesWritten = request.socket.socket ? request.socket.socket.bytesWritten : request.socket.bytesWritten;
 
