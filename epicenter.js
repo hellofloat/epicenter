@@ -146,7 +146,7 @@ if ( !opts.norequestlogging ) {
                 id: uuid.v4()
             };
 
-            console.log( requestInfo.ip + ' ' + requestInfo.request.agent + ' [' + requestInfo.date + ']' + ' "' + requestInfo.request.method + ' ' + requestInfo.request.url + ' ' + requestInfo.request.version + '" ' + requestInfo.status + ' ' + requestInfo.bytesSent + ' ' + requestInfo.responseTime + 'ms' );
+            console.log( `ip: ${ requestInfo.ip } | agent: ${ requestInfo.request.agent } | date: ${ requestInfo.date } | action: ${ requestInfo.request.method } ${ requestInfo.request.url } ${ requestInfo.request.version } | status: ${ requestInfo.status } | size: ${ requestInfo.bytesSent } | time: ${ requestInfo.responseTime }ms` );
         } );
 
         next();
