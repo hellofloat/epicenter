@@ -12,6 +12,7 @@ const fs = require( 'fs' );
 const getcli = require( './getcli' );
 const getRequestIP = require( 'get-request-ip' );
 const globToRegExp = require( 'glob-to-regexp' );
+const moment = require( 'moment' );
 const path = require( 'path' );
 const recursiveRequire = require( './recursive-require' );
 const restify = require( 'restify' );
@@ -131,7 +132,7 @@ if ( !opts.norequestlogging ) {
             let socket = request.socket.socket ? request.socket.socket : request.socket;
             const requestInfo = {
                 ip: getRequestIP( request ),
-                date: request.__startTime.toUTCString(),
+                date: moment( request.__startTime ).toISOString(),
                 request: {
                     method: request.method,
                     url: request.url,
@@ -146,7 +147,20 @@ if ( !opts.norequestlogging ) {
                 id: uuid.v4()
             };
 
-            console.log( `ip: ${ requestInfo.ip } | agent: ${ requestInfo.request.agent } | date: ${ requestInfo.date } | action: ${ requestInfo.request.method } ${ requestInfo.request.url } ${ requestInfo.request.version } | status: ${ requestInfo.status } | size: ${ requestInfo.bytesSent } | time: ${ requestInfo.responseTime }ms` );
+            switch ( opts.logformat ) {
+                case 'text':
+                    console.log( `${ requestInfo.date } | ${ requestInfo.ip } | ${ requestInfo.request.agent } | ${ requestInfo.request.method } ${ requestInfo.request.url } ${ requestInfo.request.version } | ${ requestInfo.status } | ${ requestInfo.bytesSent }b | ${ requestInfo.responseTime }ms` );
+                    break;
+                case 'json':
+                    try {
+                        console.log( JSON.stringify( requestInfo ) );
+                    }
+                    catch ( ex ) {
+                        console.warn( ex );
+                    }
+                    break;
+            }
+
         } );
 
         next();

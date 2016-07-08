@@ -43,6 +43,13 @@ module.exports = function() {
         type: 'bool',
         help: 'Disables request logging'
     }, {
+        name: 'logformat',
+        env: 'EPICENTER_LOGFORMAT',
+        type: 'string',
+        help: 'Specify the format of request logging.',
+        helpArg: 'text|json',
+        default: 'text'
+    }, {
         names: [ 'require', 'req', 'r' ],
         env: 'EPICENTER_REQUIRES',
         type: 'arrayOfString',
