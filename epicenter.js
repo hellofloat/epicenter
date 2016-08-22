@@ -63,7 +63,7 @@ let app = Object.assign( {
 
 app.server.on( 'uncaughtException', function( request, response, route, error ) {
     console.error( 'uncaughtException', error.stack );
-    response.send( error );
+    console.dir( route );
 } );
 
 app.addOrigin = function( origin ) {
