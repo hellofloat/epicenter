@@ -104,19 +104,40 @@ app.allowedHeaders = opts.cors.allowedHeaders;
 app.origins = opts.cors.origins.map( app.addOrigin.bind( app ) );
 
 function handle_uncaught_exception( request, response, route, error ) {
-    if ( !response.headersSent ) {
+    console.error( `UNCAUGHT EXCEPTION: ${ route && route.spec && route.spec.method } ${ route && route.spec && route.spec.path }` );
+    console.error( error.stack );
+
+    let sending_response = false;
+    let response_sent = false;
+    if ( response && !response.headersSent ) {
+        sending_response = true;
+        response.on( 'finish', () => {
+            response_sent = true;
+        } );
         response.send( 500, {
             error: 'internal server error',
             message: 'There was an internal server error processing your request.'
         } );
     }
-    console.error( `UNCAUGHT EXCEPTION: ${ route && route.spec && route.spec.method } ${ route && route.spec && route.spec.path }` );
-    console.error( error.stack );
 
-    // we setImmediate to give the response.send a chance to complete
-    setImmediate( () => {
+    let logging_error = false;
+    let error_logged = false;
+    if ( response && response.sentry ) {
+        logging_error = true;
+        sentry_client.on( 'logged', ident => {
+            error_logged = ident === response.sentry;
+        } );
+    }
+
+    ( function check_exit() {
+        const need_to_wait = ( sending_response && !response_sent ) || ( logging_error && !error_logged );
+        if ( need_to_wait ) {
+            setImmediate( check_exit );
+            return;
+        }
+
         process.exit( 1 );
-    } );
+    } )();
 }
 
 if ( opts.sentrydsn ) {
