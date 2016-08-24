@@ -104,7 +104,7 @@ app.origins = opts.cors.origins.map( app.addOrigin.bind( app ) );
 
 if ( opts.sentrydsn ) {
     app.server.use( sentry.middleware.connect.requestHandler( sentry_client ) );
-    app.server.on( 'uncaughtException', sentry.middleware.connect.errorHanlder( sentry_client ) );
+    app.server.on( 'uncaughtException', sentry.middleware.connect.errorHandler( sentry_client ) );
 }
 
 app.server.on( 'uncaughtException', function( request, response, route, error ) {
