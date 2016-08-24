@@ -16,7 +16,6 @@
     "node": true,
     "nonbsp": true,
     "nonew": true,
-    "singleGroups": true,
     "strict": "global",
     "undef": true,
     "unused": true

@@ -32,6 +32,7 @@ catch ( ex ) {
 const opts = getcli();
 
 let sentry_client = null;
+let sentry_logged_idents = [];
 if ( opts.sentrydsn ) {
     sentry_client = new sentry.Client( opts.sentrydsn, {
         environment: process.env.NODE_ENVIRONMENT || 'unknown',
@@ -41,6 +42,10 @@ if ( opts.sentrydsn ) {
         console.error( error );
         console.error( `logged to sentry: ${ logged }` );
         process.exit( 1 );
+    } );
+    sentry_client.on( 'logged', ident => {
+        sentry_logged_idents.unshift( ident );
+        sentry_logged_idents = sentry_logged_idents.slice( 0, 100 );
     } );
     console.log( 'Sentry error logging initialized...' );
     console.log( `  DSN: ${ opts.sentrydsn }` );
@@ -124,9 +129,9 @@ function handle_uncaught_exception( request, response, route, error ) {
     let error_logged = false;
     if ( response && response.sentry ) {
         logging_error = true;
-        sentry_client.on( 'logged', ident => {
-            error_logged = ident === response.sentry;
-        } );
+        setInterval( () => {
+            error_logged = ( sentry_logged_idents.indexOf( response.sentry ) !== -1 );
+        }, 10 );
     }
 
     ( function check_exit() {
