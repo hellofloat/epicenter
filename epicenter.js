@@ -88,7 +88,14 @@ let app = Object.assign( {
     systems: [],
     server: restify.createServer( serverOptions ),
     eventBus: new EventEmitter(),
-    sentry: sentry_client
+    sentry: sentry_client,
+    on_error: error => {
+        if ( sentry_client ) {
+            sentry_client.captureException( error );
+        }
+
+        console.trace( error );
+    }
 }, EventEmitter.prototype );
 
 app.addOrigin = function( origin ) {
