@@ -14,6 +14,7 @@ const getRequestIP = require( 'get-request-ip' );
 const globToRegExp = require( 'glob-to-regexp' );
 const moment = require( 'moment' );
 const path = require( 'path' );
+const sentry = require( 'raven' );
 const recursiveRequire = require( './recursive-require' );
 const restify = require( 'restify' );
 const untildify = require( 'untildify' );
@@ -22,6 +23,13 @@ const uuid = require( 'node-uuid' );
 const pkg = require( './package.json' );
 
 const opts = getcli();
+
+let sentry_client = null;
+if ( opts.sentrydsn ) {
+    sentry_client = new sentry.Client( opts.sentrydsn );
+    sentry_client.patchGlobal();
+    console.log( 'Sentry error logging initialized...' );
+}
 
 console.log( 'Epicenter (' + pkg.version + ') starting...' );
 
@@ -58,13 +66,9 @@ let app = Object.assign( {
     settings: opts,
     systems: [],
     server: restify.createServer( serverOptions ),
-    eventBus: new EventEmitter()
+    eventBus: new EventEmitter(),
+    sentry: sentry_client
 }, EventEmitter.prototype );
-
-app.server.on( 'uncaughtException', function( request, response, route, error ) {
-    console.error( 'uncaughtException', error.stack );
-    console.dir( route );
-} );
 
 app.addOrigin = function( origin ) {
     const self = this;
@@ -83,6 +87,16 @@ console.log( 'CORS: origins: ' + ( opts.cors.origins || [ '*' ] ).join( ', ' ) )
 
 app.allowedHeaders = opts.cors.allowedHeaders;
 app.origins = opts.cors.origins.map( app.addOrigin.bind( app ) );
+
+if ( opts.sentrydsn ) {
+    app.server.use( sentry.middleware.connect.requestHandler( sentry_client ) );
+    app.server.on( 'uncaughtException', sentry.middleware.connect.errorHanlder( sentry_client ) );
+}
+
+app.server.on( 'uncaughtException', function( request, response, route, error ) {
+    console.error( 'uncaughtException', error.stack );
+    console.dir( route );
+} );
 
 app.server.pre( function( request, response, next ) {
     if ( !request.method || !request.method.toUpperCase || request.method.toUpperCase() !== 'OPTIONS' ) {

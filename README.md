@@ -64,6 +64,16 @@ options:
     --httpsredirect                   If specified, will redirect all connections on
                                       the unsecured port to the HTTPS port.
                                       Environment: EPICENTER_HTTPS_REDIRECT=1
+
+    --co=ORIGIN, --corsorigin=ORIGIN  Specify allowed CORS origins. If none are specified,
+                                      the default * is used.
+                                      Environment: EPICENTER_CORS_ORIGINS=ORIGIN. Default: ["*"]
+
+    --ch=HEADER, --corsheader=HEADER  Specify allowed CORS headers.
+                                      Environment: EPICENTER_CORS_HEADERS=HEADER. Default: null
+
+    --sentrydsn=DSN                   Specify a DSN for Sentry (https://getsentry.com) error tracking.
+                                      Environment: EPICENTER_SENTRY_DSN=DSN. Default: null
 ```
 
 ## Status

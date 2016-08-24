@@ -122,6 +122,13 @@ module.exports = function() {
         help: 'Specify allowed CORS headers.',
         helpArg: 'HEADER',
         default: null
+    }, {
+        name: 'sentrydsn',
+        env: 'EPICENTER_SENTRY_DSN',
+        type: 'string',
+        help: 'Specify a DSN for Sentry (https://getsentry.com) error tracking.',
+        helpArg: 'DSN',
+        default: null
     } ];
 
     const scriptName = path.basename( require.main.filename );

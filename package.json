@@ -1,34 +1,35 @@
 {
-    "name": "epicenter",
-    "version": "3.7.2",
-    "description": "Modular Restify server",
-    "license": "MIT",
-    "author": {
-        "name": "Andy Burke",
-        "email": "aburke@bitflood.org",
-        "url": "https://github.com/andyburke"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/hellofloat/epicenter.git"
-    },
-    "bin": {
-        "epicenter": "./epicenter.js"
-    },
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "dependencies": {
-        "async": "^1.5.2",
-        "boolean": "^0.1.0",
-        "cors": "^2.7.1",
-        "dashdash": "^1.13.0",
-        "get-request-ip": "^1.0.1",
-        "glob-to-regexp": "^0.1.0",
-        "moment": "^2.14.1",
-        "node-uuid": "^1.4.7",
-        "restify": "^4.0.4",
-        "restify-cookies": "^0.2.0",
-        "untildify": "^2.1.0"
-    }
+  "name": "epicenter",
+  "version": "3.8.0",
+  "description": "Modular Restify server",
+  "license": "MIT",
+  "author": {
+    "name": "Andy Burke",
+    "email": "aburke@bitflood.org",
+    "url": "https://github.com/andyburke"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hellofloat/epicenter.git"
+  },
+  "bin": {
+    "epicenter": "./epicenter.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "async": "^1.5.2",
+    "boolean": "^0.1.0",
+    "cors": "^2.7.1",
+    "dashdash": "^1.13.0",
+    "get-request-ip": "^1.0.1",
+    "glob-to-regexp": "^0.1.0",
+    "moment": "^2.14.1",
+    "node-uuid": "^1.4.7",
+    "raven": "^0.12.1",
+    "restify": "^4.0.4",
+    "restify-cookies": "^0.2.0",
+    "untildify": "^2.1.0"
+  }
 }
