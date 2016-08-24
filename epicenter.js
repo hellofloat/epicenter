@@ -149,7 +149,14 @@ if ( opts.sentrydsn ) {
     app.server.use( sentry.middleware.connect.requestHandler( sentry_client ) );
     const sentry_error_handler = sentry.middleware.connect.errorHandler( sentry_client );
     app.server.on( 'uncaughtException', ( request, response, route, error ) => {
+        if ( request && request.user ) {
+            sentry_client.setUserContext( {
+                id: request.user.id,
+                email: request.user.email
+            } );
+        }
         sentry_error_handler( error, request, response, () => {
+            sentry_client.setUserContext( null );
             handle_uncaught_exception( request, response, route, error );
         } );
     } );
