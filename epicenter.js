@@ -112,7 +112,11 @@ function handle_uncaught_exception( request, response, route, error ) {
     }
     console.error( `UNCAUGHT EXCEPTION: ${ route && route.spec && route.spec.method } ${ route && route.spec && route.spec.path }` );
     console.error( error.stack );
-    process.exit( 1 );
+
+    // we setImmediate to give the response.send a chance to complete
+    setImmediate( () => {
+        process.exit( 1 );
+    } );
 }
 
 if ( opts.sentrydsn ) {
