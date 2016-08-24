@@ -21,6 +21,9 @@ const untildify = require( 'untildify' );
 const uuid = require( 'node-uuid' );
 
 const epicenter_package = require( './package.json' );
+
+console.log( `Epicenter (${ epicenter_package.version }) starting...` );
+
 let api_package = null;
 try {
     api_package = require( path.join( path.resolve( '.' ), 'package.json' ) );
@@ -50,8 +53,6 @@ if ( opts.sentrydsn ) {
     console.log( 'Sentry error logging initialized...' );
     console.log( `  DSN: ${ opts.sentrydsn }` );
 }
-
-console.log( `Epicenter (${ epicenter_package.version }) starting...` );
 
 if ( opts.verbose ) {
     console.log( 'Epicenter verbose output enabled.' );
