@@ -37,11 +37,15 @@ if ( opts.sentrydsn ) {
         environment: process.env.NODE_ENVIRONMENT || 'unknown',
         release: `epicenter (${ epicenter_package.version }) / ${ opts.name || api_package.name } (${ api_package.version })`
     } );
-    sentry_client.patchGlobal();
+    sentry_client.patchGlobal( ( logged, error ) => {
+        console.error( `logged to sentry: ${ logged }` );
+        console.error( error );
+    } );
     console.log( 'Sentry error logging initialized...' );
+    console.log( `  DSN: ${ opts.sentrydsn }` );
 }
 
-console.log( 'Epicenter (' + epicenter_package.version + ') starting...' );
+console.log( `Epicenter (${ epicenter_package.version }) starting...` );
 
 if ( opts.verbose ) {
     console.log( 'Epicenter verbose output enabled.' );
@@ -92,8 +96,8 @@ app.addOrigin = function( origin ) {
     } );
 };
 
-console.log( 'CORS: allowed headers: ' + ( opts.cors.allowedHeaders || [] ).join( ', ' ) );
-console.log( 'CORS: origins: ' + ( opts.cors.origins || [ '*' ] ).join( ', ' ) );
+console.log( `CORS: allowed headers: ${ ( opts.cors.allowedHeaders || [] ).join( ', ' ) }` );
+console.log( `CORS: origins: ${ ( opts.cors.origins || [ '*' ] ).join( ', ' ) }` );
 
 app.allowedHeaders = opts.cors.allowedHeaders;
 app.origins = opts.cors.origins.map( app.addOrigin.bind( app ) );
@@ -235,7 +239,7 @@ if ( sslEnabled ) {
             const hostString = request.headers.host;
             const hostInfo = hostString.split( ':' );
             const host = hostInfo[ 0 ];
-            response.header( 'Location', 'https://' + host + request.url );
+            response.header( 'Location', `https://${ host }${ request.url }` );
             response.send( 301 );
         } );
     }
@@ -251,7 +255,7 @@ if ( sslEnabled ) {
 function loadSystem( system, _canonical, _filename, callback ) {
     _systemsLoaded[ _canonical ] = true;
 
-    console.log( 'Initializing: ' + _canonical + ' ... ' );
+    console.log( `Initializing: ${ _canonical } ...` );
 
     app.systems.push( system );
 
@@ -304,7 +308,7 @@ async.eachSeries( opts.requires, function( req, next ) {
 
             const initializationTime = new Date() - initializationCheckStartTime;
             if ( initializationTime > MAX_INITIALIZATION_TIME ) {
-                console.error( 'Exceeded max initialization wait time: ' + MAX_INITIALIZATION_TIME );
+                console.error( `Exceeded max initialization wait time: ${ MAX_INITIALIZATION_TIME }` );
                 process.exit( 1 );
             }
 
@@ -315,7 +319,7 @@ async.eachSeries( opts.requires, function( req, next ) {
 
     const port = sslEnabled ? opts.httpsport : opts.httpport;
     app.server.listen( port );
-    console.log( 'Listening on port: ' + port + ' ...' );
+    console.log( `Listening on port: ${ port } ...` );
 
     _ready = true;
 } );
