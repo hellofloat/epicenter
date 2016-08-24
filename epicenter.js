@@ -20,18 +20,28 @@ const restify = require( 'restify' );
 const untildify = require( 'untildify' );
 const uuid = require( 'node-uuid' );
 
-const pkg = require( './package.json' );
+const epicenter_package = require( './package.json' );
+let api_package = null;
+try {
+    api_package = require( path.join( path.resolve( '.' ), 'package.json' ) );
+}
+catch ( ex ) {
+    api_package = {};
+}
 
 const opts = getcli();
 
 let sentry_client = null;
 if ( opts.sentrydsn ) {
-    sentry_client = new sentry.Client( opts.sentrydsn );
+    sentry_client = new sentry.Client( opts.sentrydsn, {
+        environment: process.env.NODE_ENVIRONMENT || 'unknown',
+        release: `epicenter (${ epicenter_package.version }) / ${ opts.name || api_package.name } (${ api_package.version })`
+    } );
     sentry_client.patchGlobal();
     console.log( 'Sentry error logging initialized...' );
 }
 
-console.log( 'Epicenter (' + pkg.version + ') starting...' );
+console.log( 'Epicenter (' + epicenter_package.version + ') starting...' );
 
 if ( opts.verbose ) {
     console.log( 'Epicenter verbose output enabled.' );
@@ -193,17 +203,9 @@ if ( !opts.norequestlogging ) {
     } );
 }
 
-
-let apiPackage = null;
-try {
-    apiPackage = require( path.join( path.resolve( '.' ), 'package.json' ) );
-}
-catch ( ex ) {
-    apiPackage = {};
-}
 app.server.get( '/__epicenter', function( request, response ) {
     response.send( {
-        version: pkg.version,
+        version: epicenter_package.version,
         name: opts.name,
         node: process.versions,
         requests: _requests,
@@ -216,7 +218,7 @@ app.server.get( '/__epicenter', function( request, response ) {
         systemsInitialized: _systemsInitialized,
         canonical: opts.canonical,
         api: {
-            version: apiPackage.version
+            version: api_package.version
         }
     } );
 } );
