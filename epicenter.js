@@ -44,7 +44,7 @@ if ( opts.sentrydsn ) {
         process.exit( 1 );
     } );
     sentry_client.on( 'logged', ident => {
-        sentry_logged_idents.unshift( ident );
+        sentry_logged_idents.unshift( ident && ident.id || ident );
         sentry_logged_idents = sentry_logged_idents.slice( 0, 100 );
     } );
     console.log( 'Sentry error logging initialized...' );
