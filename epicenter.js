@@ -50,6 +50,9 @@ if ( opts.sentrydsn ) {
         sentry_logged_idents.unshift( ident && ident.id || ident );
         sentry_logged_idents = sentry_logged_idents.slice( 0, 100 );
     } );
+    sentry_client.setTagsContext( {
+        service: opts.name || api_package.name || 'unknown'
+    } );
     console.log( 'Sentry error logging initialized...' );
     console.log( `  DSN: ${ opts.sentrydsn }` );
 }
