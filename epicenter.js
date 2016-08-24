@@ -38,8 +38,9 @@ if ( opts.sentrydsn ) {
         release: `epicenter (${ epicenter_package.version }) / ${ opts.name || api_package.name } (${ api_package.version })`
     } );
     sentry_client.patchGlobal( ( logged, error ) => {
-        console.error( `logged to sentry: ${ logged }` );
         console.error( error );
+        console.error( `logged to sentry: ${ logged }` );
+        process.exit( 1 );
     } );
     console.log( 'Sentry error logging initialized...' );
     console.log( `  DSN: ${ opts.sentrydsn }` );
@@ -104,13 +105,20 @@ app.origins = opts.cors.origins.map( app.addOrigin.bind( app ) );
 
 if ( opts.sentrydsn ) {
     app.server.use( sentry.middleware.connect.requestHandler( sentry_client ) );
-    app.server.on( 'uncaughtException', sentry.middleware.connect.errorHandler( sentry_client ) );
+    const sentry_error_handler = sentry.middleware.connect.errorHandler( sentry_client );
+    app.server.on( 'uncaughtException', ( request, response, route, error ) => {
+        sentry_error_handler( error, request, response, () => {
+            console.error( `UNCAUGHT EXCEPTION: ${ route && route.spec && route.spec.method } ${ route && route.spec && route.spec.path }` );
+            console.error( error.stack );
+        } );
+    } );
 }
-
-app.server.on( 'uncaughtException', function( request, response, route, error ) {
-    console.error( 'uncaughtException', error.stack );
-    console.dir( route );
-} );
+else {
+    app.server.on( 'uncaughtException', function( request, response, route, error ) {
+        console.error( `UNCAUGHT EXCEPTION: ${ route && route.spec && route.spec.method } ${ route && route.spec && route.spec.path }` );
+        console.error( error.stack );
+    } );
+}
 
 app.server.pre( function( request, response, next ) {
     if ( !request.method || !request.method.toUpperCase || request.method.toUpperCase() !== 'OPTIONS' ) {
