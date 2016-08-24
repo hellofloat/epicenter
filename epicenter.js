@@ -103,21 +103,28 @@ console.log( `CORS: origins: ${ ( opts.cors.origins || [ '*' ] ).join( ', ' ) }`
 app.allowedHeaders = opts.cors.allowedHeaders;
 app.origins = opts.cors.origins.map( app.addOrigin.bind( app ) );
 
+function handle_uncaught_exception( request, response, route, error ) {
+    if ( !response.headersSent ) {
+        response.send( 500, {
+            error: 'internal server error',
+            message: 'There was an internal server error processing your request.'
+        } );
+    }
+    console.error( `UNCAUGHT EXCEPTION: ${ route && route.spec && route.spec.method } ${ route && route.spec && route.spec.path }` );
+    console.error( error.stack );
+}
+
 if ( opts.sentrydsn ) {
     app.server.use( sentry.middleware.connect.requestHandler( sentry_client ) );
     const sentry_error_handler = sentry.middleware.connect.errorHandler( sentry_client );
     app.server.on( 'uncaughtException', ( request, response, route, error ) => {
         sentry_error_handler( error, request, response, () => {
-            console.error( `UNCAUGHT EXCEPTION: ${ route && route.spec && route.spec.method } ${ route && route.spec && route.spec.path }` );
-            console.error( error.stack );
+            handle_uncaught_exception( request, response, route, error );
         } );
     } );
 }
 else {
-    app.server.on( 'uncaughtException', function( request, response, route, error ) {
-        console.error( `UNCAUGHT EXCEPTION: ${ route && route.spec && route.spec.method } ${ route && route.spec && route.spec.path }` );
-        console.error( error.stack );
-    } );
+    app.server.on( 'uncaughtException', handle_uncaught_exception );
 }
 
 app.server.pre( function( request, response, next ) {
