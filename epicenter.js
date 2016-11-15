@@ -61,17 +61,9 @@ if ( opts.verbose ) {
     console.log( 'Epicenter verbose output enabled.' );
 }
 
-let _ready = false;
-let _initialized = false;
 let _systemsLoaded = {};
 let _systemsInitializing = {};
 let _systemsInitialized = {};
-let _requests = {
-    active: 0,
-    total: 0,
-    failed: 0,
-    time: 0
-};
 
 const sslEnabled = opts.httpscert && opts.httpskey;
 let serverOptions = {
@@ -88,6 +80,16 @@ if ( sslEnabled ) {
 
 let app = Object.assign( {
     settings: opts,
+    status: {
+        initialized: false,
+        ready: false,
+        requests: {
+            active: 0,
+            total: 0,
+            failed: 0,
+            time: 0
+        }
+    },
     systems: [],
     server: restify.createServer( serverOptions ),
     eventBus: new EventEmitter(),
@@ -199,18 +201,18 @@ app.server.use( restify.gzipResponse() );
 
 app.server.use( function( request, response, next ) {
     var requestStartTime = new Date();
-    ++_requests.total;
-    ++_requests.active;
+    ++app.status.requests.total;
+    ++app.status.requests.active;
     response.on( 'close', function() {
-        --_requests.active;
-        ++_requests.failed;
+        --app.status.requests.active;
+        ++app.status.requests.failed;
         var timeDelta = new Date() - requestStartTime;
-        _requests.time += timeDelta;
+        app.status.requests.time += timeDelta;
     } );
     response.on( 'finish', function() {
-        --_requests.active;
+        --app.status.requests.active;
         var timeDelta = new Date() - requestStartTime;
-        _requests.time += timeDelta;
+        app.status.requests.time += timeDelta;
     } );
     next();
 } );
@@ -276,11 +278,11 @@ app.server.get( '/__epicenter', function( request, response ) {
         version: epicenter_package.version,
         name: opts.name,
         node: process.versions,
-        requests: _requests,
+        requests: app.status.requests,
         uptime: new Date() - _startTime,
-        averageResponseTime: _requests.time / _requests.total,
-        ready: _ready,
-        initialized: _initialized,
+        averageResponseTime: app.status.requests.time / app.status.requests.total,
+        ready: app.status.ready,
+        initialized: app.status.initialized,
         systemsLoaded: _systemsLoaded,
         systemsInitializing: _systemsInitializing,
         systemsInitialized: _systemsInitialized,
@@ -367,8 +369,8 @@ async.eachSeries( opts.requires, function( req, next ) {
 
     const initializationCheckStartTime = new Date();
     ( function checkInitialized() {
-        _initialized = !!!Object.keys( _systemsInitializing ).length;
-        if ( !_initialized ) {
+        app.status.initialized = !!!Object.keys( _systemsInitializing ).length;
+        if ( !app.status.initialized ) {
 
             const initializationTime = new Date() - initializationCheckStartTime;
             if ( initializationTime > MAX_INITIALIZATION_TIME ) {
@@ -385,5 +387,5 @@ async.eachSeries( opts.requires, function( req, next ) {
     app.server.listen( port );
     console.log( `Listening on port: ${ port } ...` );
 
-    _ready = true;
+    app.status.ready = true;
 } );
