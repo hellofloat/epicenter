@@ -18,7 +18,7 @@ const sentry = require( 'raven' );
 const recursiveRequire = require( './recursive-require' );
 const restify = require( 'restify' );
 const untildify = require( 'untildify' );
-const uuid = require( 'node-uuid' );
+const uuid = require( 'uuid' );
 
 const epicenter_package = require( './package.json' );
 
