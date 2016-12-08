@@ -68,7 +68,7 @@ module.exports = function() {
         type: 'string',
         help: 'Specify the service name for restify.',
         helpArg: 'NAME',
-        default: 'epicenter'
+        default: null
     }, {
         name: 'httpport',
         env: 'EPICENTER_HTTP_PORT',

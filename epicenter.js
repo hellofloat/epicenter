@@ -34,12 +34,14 @@ catch ( ex ) {
 
 const opts = getcli();
 
+const service_name = opts.name || api_package.name || 'unknown';
+
 let sentry_client = null;
 let sentry_logged_idents = [];
 if ( opts.sentrydsn ) {
     sentry_client = new sentry.Client( opts.sentrydsn, {
         environment: process.env.NODE_ENVIRONMENT || 'unknown',
-        release: `epicenter (${ epicenter_package.version }) / ${ opts.name || api_package.name } (${ api_package.version })`
+        release: `epicenter (${ epicenter_package.version }) / ${ service_name } (${ api_package.version })`
     } );
     sentry_client.patchGlobal( ( logged, error ) => {
         console.error( error );
@@ -51,7 +53,7 @@ if ( opts.sentrydsn ) {
         sentry_logged_idents = sentry_logged_idents.slice( 0, 100 );
     } );
     sentry_client.setTagsContext( {
-        service: opts.name || api_package.name || 'unknown'
+        service: service_name
     } );
     console.log( 'Sentry error logging initialized...' );
     console.log( `  DSN: ${ opts.sentrydsn }` );
@@ -67,7 +69,7 @@ let _systemsInitialized = {};
 
 const sslEnabled = opts.httpscert && opts.httpskey;
 let serverOptions = {
-    name: opts.name
+    name: service_name
 };
 
 if ( sslEnabled ) {
@@ -276,7 +278,7 @@ if ( !opts.norequestlogging ) {
 app.server.get( '/__epicenter', function( request, response ) {
     response.send( {
         version: epicenter_package.version,
-        name: opts.name,
+        name: service_name,
         node: process.versions,
         requests: app.status.requests,
         uptime: new Date() - _startTime,
@@ -297,7 +299,7 @@ if ( sslEnabled ) {
     console.log( 'HTTPS enabled' );
 
     let httpServer = restify.createServer( {
-        name: opts.name
+        name: service_name
     } );
     if ( opts.httpsredirect ) {
         console.log( '  Redirecting unsecured requests...' );
