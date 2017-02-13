@@ -14,7 +14,7 @@ const getRequestIP = require( 'get-request-ip' );
 const globToRegExp = require( 'glob-to-regexp' );
 const moment = require( 'moment' );
 const path = require( 'path' );
-const sentry = require( 'raven' );
+const Raven = require( 'raven' );
 const recursiveRequire = require( './recursive-require' );
 const restify = require( 'restify' );
 const untildify = require( 'untildify' );
@@ -36,24 +36,22 @@ const opts = getcli();
 
 const service_name = opts.name || api_package.name || 'unknown';
 
-let sentry_client = null;
 let sentry_logged_idents = [];
 if ( opts.sentrydsn ) {
-    sentry_client = new sentry.Client( opts.sentrydsn, {
+    Raven.config( opts.sentrydsn, {
         environment: process.env.NODE_ENVIRONMENT || 'unknown',
-        release: `epicenter (${ epicenter_package.version }) / ${ service_name } (${ api_package.version })`
-    } );
-    sentry_client.patchGlobal( ( logged, error ) => {
+        release: `epicenter (${ epicenter_package.version }) / ${ service_name } (${ api_package.version })`,
+        tags: {
+            service: service_name
+        }
+    } ).install( ( logged, error ) => {
         console.error( error );
         console.error( `logged to sentry: ${ logged }` );
         process.exit( 1 );
     } );
-    sentry_client.on( 'logged', ident => {
+    Raven.on( 'logged', ident => {
         sentry_logged_idents.unshift( ident && ident.id || ident );
         sentry_logged_idents = sentry_logged_idents.slice( 0, 100 );
-    } );
-    sentry_client.setTagsContext( {
-        service: service_name
     } );
     console.log( 'Sentry error logging initialized...' );
     console.log( `  DSN: ${ opts.sentrydsn }` );
@@ -95,10 +93,10 @@ let app = Object.assign( {
     systems: [],
     server: restify.createServer( serverOptions ),
     eventBus: new EventEmitter(),
-    sentry: sentry_client,
+    sentry: Raven,
     on_error: error => {
-        if ( sentry_client ) {
-            sentry_client.captureException( error );
+        if ( opts.sentrydsn ) {
+            Raven.captureException( error );
         }
 
         console.trace( error );
@@ -152,7 +150,7 @@ function handle_uncaught_exception( request, response, route, error ) {
     ( function check_exit() {
         const need_to_wait = ( sending_response && !response_sent ) || ( logging_error && !error_logged );
         if ( need_to_wait ) {
-            setImmediate( check_exit );
+            setTimeout( check_exit, 100 );
             return;
         }
 
@@ -161,17 +159,17 @@ function handle_uncaught_exception( request, response, route, error ) {
 }
 
 if ( opts.sentrydsn ) {
-    app.server.use( sentry.middleware.connect.requestHandler( sentry_client ) );
-    const sentry_error_handler = sentry.middleware.connect.errorHandler( sentry_client );
+    app.server.use( Raven.requestHandler() );
+    const raven_error_handler = Raven.errorHandler();
     app.server.on( 'uncaughtException', ( request, response, route, error ) => {
         if ( request && request.user ) {
-            sentry_client.setUserContext( {
+            Raven.setUserContext( {
                 id: request.user.id,
                 email: request.user.email
             } );
         }
-        sentry_error_handler( error, request, response, () => {
-            sentry_client.setUserContext( null );
+        raven_error_handler( error, request, response, () => {
+            Raven.setUserContext( null );
             handle_uncaught_exception( request, response, route, error );
         } );
     } );

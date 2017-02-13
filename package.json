@@ -1,6 +1,6 @@
 {
   "name": "epicenter",
-  "version": "3.12.2",
+  "version": "3.13.0",
   "description": "Modular Restify server",
   "license": "MIT",
   "author": {
@@ -19,17 +19,17 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "async": "^1.5.2",
-    "boolean": "^0.1.0",
-    "cors": "^2.7.1",
-    "dashdash": "^1.13.0",
+    "async": "^2.1.4",
+    "boolean": "^0.1.2",
+    "cors": "^2.8.1",
+    "dashdash": "^1.14.1",
     "get-request-ip": "^1.0.1",
-    "glob-to-regexp": "^0.1.0",
-    "moment": "^2.14.1",
-    "raven": "^0.12.1",
-    "restify": "^4.0.4",
-    "restify-cookies": "^0.2.0",
-    "untildify": "^2.1.0",
-    "uuid": "^3.0.0"
+    "glob-to-regexp": "^0.3.0",
+    "moment": "^2.17.1",
+    "raven": "^1.1.2",
+    "restify": "^4.3.0",
+    "restify-cookies": "^0.2.2",
+    "untildify": "^3.0.2",
+    "uuid": "^3.0.1"
   }
 }
